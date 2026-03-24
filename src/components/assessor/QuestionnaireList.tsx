@@ -87,13 +87,35 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-3">
-        {questionnaires.length === 0 ? (
-          <div className="bg-navy-800 border border-dashed border-navy-600 rounded-xl p-8 text-center">
-            <p className="text-navy-300 font-medium mb-1">No custom questionnaires yet</p>
-            <p className="text-navy-500 text-sm">Build a new one or import an existing document.</p>
-          </div>
-        ) : (
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+
+        {/* Standard questionnaires */}
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-navy-400 uppercase tracking-wide px-1">Standard</p>
+          {[
+            { label: 'Under 16', sub: 'Parent/Carer questionnaire' },
+            { label: '16 or over', sub: 'Individual questionnaire' },
+            { label: 'Visual', sub: 'Visual history and difficulties' },
+          ].map(q => (
+            <div key={q.label} className="bg-navy-800 border border-navy-700 rounded-xl px-4 py-3 flex items-center justify-between">
+              <div>
+                <div className="font-medium text-white text-sm">{q.label}</div>
+                <div className="text-xs text-navy-400 mt-0.5">{q.sub}</div>
+              </div>
+              <span className="text-xs text-navy-500 bg-navy-700 border border-navy-600 rounded px-2 py-0.5">Built-in</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Custom questionnaires */}
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-navy-400 uppercase tracking-wide px-1">Custom</p>
+          {questionnaires.length === 0 ? (
+            <div className="bg-navy-800 border border-dashed border-navy-600 rounded-xl p-6 text-center">
+              <p className="text-navy-400 text-sm">No custom questionnaires yet.</p>
+              <p className="text-navy-500 text-xs mt-1">Build a new one or import an existing document.</p>
+            </div>
+          ) : (
           questionnaires.map(q => (
             <div key={q.id} className="bg-navy-800 border border-navy-700 rounded-xl p-4 flex items-center gap-3">
               <div className="flex-1 min-w-0">
@@ -137,7 +159,9 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
               </button>
             </div>
           ))
-        )}
+          )}
+        </div>
+
       </div>
     </div>
   )
