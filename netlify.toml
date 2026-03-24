@@ -4,6 +4,7 @@
 
 [build.environment]
   NPM_FLAGS = "--legacy-peer-deps"
+  SECRETS_SCAN_OMIT_KEYS = "BGINFO_PUBLISH_SECRET"
 
 [functions]
   directory = "netlify/functions"
@@ -19,6 +20,9 @@
   timeout = 30
 
 [functions."map-sections"]
+  timeout = 60
+
+[functions."questionnaire"]
   timeout = 60
 
 [[redirects]]
@@ -39,6 +43,11 @@
 [[redirects]]
   from = "/api/map-sections"
   to = "/.netlify/functions/map-sections"
+  status = 200
+
+[[redirects]]
+  from = "/api/questionnaire"
+  to = "/.netlify/functions/questionnaire"
   status = 200
 
 [[headers]]
