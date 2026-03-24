@@ -24,7 +24,6 @@ function generateInternalCode(qType: QuestionnaireType, variant: PackageVariant 
 export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalProps) {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [pronouns, setPronouns] = useState('')
   const [qType, setQType] = useState<QuestionnaireType>('under16')
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -59,7 +58,6 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
         name: fullName,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        pronouns: pronouns.trim() || undefined,
         code,
         questionnaireType: qType,
         importedQuestionnaireId: isCustom ? selectedImportedId : undefined,
@@ -197,23 +195,6 @@ If you have any questions, please get in touch.`
               />
               {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Preferred Pronouns <span className="font-normal text-gray-400">(optional)</span>
-            </label>
-            <select
-              value={pronouns}
-              onChange={e => setPronouns(e.target.value)}
-              className="w-full border-2 border-gray-300 rounded-xl py-3 px-4 text-base focus:outline-none focus:border-primary-500 transition-colors bg-white text-gray-700"
-            >
-              <option value="">Not specified</option>
-              <option value="she/her">she/her</option>
-              <option value="he/him">he/him</option>
-              <option value="they/them">they/them</option>
-              <option value="prefer not to say">Prefer not to say</option>
-            </select>
           </div>
 
           <div>

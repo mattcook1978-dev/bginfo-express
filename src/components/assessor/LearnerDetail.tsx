@@ -8,7 +8,7 @@ import { generateKeyPointsBank } from '../../lib/generateKeyPointsBank'
 import { questionnaireUnder16 } from '../../data/questionnaire-under16'
 import { questionnaire16plus } from '../../data/questionnaire-16plus'
 import { questionnaireVisual } from '../../lib/questionnaire'
-import { downloadExpressDoc } from '../../lib/wordExport'
+import { downloadExpressDoc, downloadKeyNotesDoc, downloadResponsesDoc } from '../../lib/wordExport'
 
 const REPORT_SECTION_ORDER = ['bg-health', 'bg-family', 'bg-linguistic', 'bg-educational', 'bg-current', 'bg-further']
 const REPORT_SECTION_LABELS: Record<string, string> = {
@@ -44,6 +44,8 @@ export default function LearnerDetail({ record, onBack, onDeleted, onRecordUpdat
   const [generatingFirstTime, setGeneratingFirstTime] = useState(false)
   const [keyNotesStale, setKeyNotesStale] = useState(false)
   const [downloading, setDownloading] = useState(false)
+  const [downloadingKeyNotes, setDownloadingKeyNotes] = useState(false)
+  const [downloadingResponses, setDownloadingResponses] = useState<PackageVariant | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [shareCopied, setShareCopied] = useState<PackageVariant | null>(null)
 
@@ -206,6 +208,36 @@ export default function LearnerDetail({ record, onBack, onDeleted, onRecordUpdat
     }
   }
 
+  const handleDownloadKeyNotes = async () => {
+    setDownloadingKeyNotes(true)
+    try {
+      await downloadKeyNotesDoc(currentRecord.name, keyNotes)
+    } finally {
+      setDownloadingKeyNotes(false)
+    }
+  }
+
+  const handleDownloadResponses = async (variant: PackageVariant) => {
+    if (!backgroundQuestionnaire) return
+    setDownloadingResponses(variant)
+    try {
+      const responses = packageResponses[variant]
+      if (!responses) return
+      const questionnaire: Questionnaire =
+        variant === 'visual'
+          ? { type: currentRecord.questionnaireType, sections: questionnaireVisual.sections }
+          : { type: currentRecord.questionnaireType, sections: backgroundQuestionnaire.sections }
+      await downloadResponsesDoc(
+        currentRecord.name,
+        variant === 'visual' ? 'visual' : 'background',
+        questionnaire,
+        responses,
+      )
+    } finally {
+      setDownloadingResponses(null)
+    }
+  }
+
   const handleDelete = async () => {
     // Delete any stored import links from Netlify
     for (const pkg of Object.values(packages)) {
@@ -261,11 +293,12 @@ If you have any questions, please get in touch.`
           <h1 className="font-bold text-white text-lg flex-1 truncate">{currentRecord.name}</h1>
           <button
             onClick={handleDownload}
-            disabled={!canDownload || downloading}
+            disabled={!canDownload || !hasKeyNotes || downloading}
+            title={!hasKeyNotes ? 'Generate key notes first' : undefined}
             className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
           >
             <Download className="w-4 h-4" />
-            {downloading ? 'Preparing...' : 'Download'}
+            {downloading ? 'Preparing...' : 'Download all'}
           </button>
         </div>
       </div>
@@ -320,6 +353,18 @@ If you have any questions, please get in touch.`
                   </button>
                 )}
 
+                {isImported && (
+                  <button
+                    onClick={() => void handleDownloadResponses(variant)}
+                    disabled={downloadingResponses === variant}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-navy-700 hover:bg-navy-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
+                    title="Download responses as Word doc"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    {downloadingResponses === variant ? 'Saving...' : 'Download'}
+                  </button>
+                )}
+
                 {/* Manual file import */}
                 <label className="flex items-center gap-1.5 px-3 py-1.5 bg-navy-700 hover:bg-navy-600 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer">
                   <Upload className="w-3.5 h-3.5" />
@@ -342,20 +387,31 @@ If you have any questions, please get in touch.`
 
         {/* Key Notes */}
         <div className="bg-navy-800 border border-navy-700 rounded-xl p-5 space-y-4">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <h2 className="font-semibold text-white text-sm">Key Notes</h2>
-            <button
-              onClick={() => void handleGenerateKeyNotes(false)}
-              disabled={!canDownload || generatingKeyNotes}
-              className="flex items-center gap-1.5 px-3 py-2 bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${generatingKeyNotes ? 'animate-spin' : ''}`} />
-              {generatingKeyNotes
-                ? generatingFirstTime
-                  ? 'Generating (first time — up to 1 min)...'
-                  : 'Generating...'
-                : hasKeyNotes ? 'Regenerate' : '+ Generate Key Notes'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => void handleDownloadKeyNotes()}
+                disabled={!hasKeyNotes || downloadingKeyNotes}
+                title={!hasKeyNotes ? 'Generate key notes first' : undefined}
+                className="flex items-center gap-1.5 px-3 py-2 bg-navy-700 hover:bg-navy-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {downloadingKeyNotes ? 'Saving...' : 'Download key notes'}
+              </button>
+              <button
+                onClick={() => void handleGenerateKeyNotes(false)}
+                disabled={!canDownload || generatingKeyNotes}
+                className="flex items-center gap-1.5 px-3 py-2 bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${generatingKeyNotes ? 'animate-spin' : ''}`} />
+                {generatingKeyNotes
+                  ? generatingFirstTime
+                    ? 'Generating (first time - up to 1 min)...'
+                    : 'Generating...'
+                  : hasKeyNotes ? 'Regenerate' : '+ Generate Key Notes'}
+              </button>
+            </div>
           </div>
 
           {keyNotesStale && (

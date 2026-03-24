@@ -17,7 +17,6 @@ const C_GREY = '666666'
 // ── Size constants (half-points) ──────────────────────────────────────────────
 const SZ_TITLE = 56  // 28pt
 const SZ_H1    = 28  // 14pt
-const SZ_H2    = 26  // 13pt
 const SZ_BODY  = 22  // 11pt
 const SZ_SMALL = 20  // 10pt
 
@@ -38,13 +37,6 @@ function sectionHeading(text: string): Paragraph {
     children: [new TextRun({ text, bold: true, color: C_DARK, size: SZ_H1, font: 'Arial' })],
     border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: C_DARK, space: 4 } },
     spacing: { before: 560, after: 200 },
-  })
-}
-
-function subsectionHeading(text: string): Paragraph {
-  return new Paragraph({
-    children: [new TextRun({ text, bold: true, color: C_MID, size: SZ_H2, font: 'Arial' })],
-    spacing: { before: 360, after: 120 },
   })
 }
 
@@ -117,7 +109,6 @@ function formatAnswer(value: string | string[] | boolean | undefined): string {
   if (value === undefined || value === null || value === '') return ''
   if (typeof value === 'boolean') return value ? 'Yes' : 'No'
   if (Array.isArray(value)) return value.join(', ')
-  // Normalised yes/no values → display labels
   const norm: Record<string, string> = {
     yes: 'Yes', no: 'No', not_sure: 'Not sure', prefer_not_to_say: 'Prefer not to say',
   }
@@ -175,13 +166,23 @@ function buildRQParagraphs(question: Question, responses: Responses, depth: numb
 }
 
 function buildRSubsectionParagraphs(sub: Subsection, responses: Responses): Paragraph[] {
-  const paras: Paragraph[] = [subsectionHeading(sub.title)]
+  const paras: Paragraph[] = [
+    new Paragraph({
+      style: 'Heading2',
+      children: [new TextRun({ text: sub.title, font: 'Arial' })],
+    }),
+  ]
   for (const q of sub.questions) paras.push(...buildRQParagraphs(q, responses, 0))
   return paras
 }
 
 function buildRSectionParagraphs(section: Section, responses: Responses): Paragraph[] {
-  const paras: Paragraph[] = [sectionHeading(section.title)]
+  const paras: Paragraph[] = [
+    new Paragraph({
+      style: 'Heading1',
+      children: [new TextRun({ text: section.title, font: 'Arial' })],
+    }),
+  ]
   if (section.questions) {
     for (const q of section.questions) paras.push(...buildRQParagraphs(q, responses, 0))
   }
@@ -191,60 +192,102 @@ function buildRSectionParagraphs(section: Section, responses: Responses): Paragr
   return paras
 }
 
-// ── Main export ───────────────────────────────────────────────────────────────
+// ── Key Notes helpers ─────────────────────────────────────────────────────────
+
+function buildKeyNotesParagraphs(keyNotes: Record<string, string>): Paragraph[] {
+  const paras: Paragraph[] = []
+  const hasAny = REPORT_SECTION_ORDER.some(id => keyNotes[id]?.trim())
+  if (!hasAny) {
+    paras.push(greyNote('No key notes generated yet.'))
+    return paras
+  }
+  for (const sectionId of REPORT_SECTION_ORDER) {
+    const prose = keyNotes[sectionId]?.trim()
+    if (!prose) continue
+    paras.push(
+      new Paragraph({
+        style: 'Heading2',
+        children: [new TextRun({ text: REPORT_SECTION_LABELS[sectionId] ?? sectionId, font: 'Arial' })],
+      })
+    )
+    for (const sentence of prose.split('\n').map(s => s.trim().replace(/—/g, '-')).filter(Boolean)) {
+      paras.push(bodyParagraph(sentence))
+    }
+  }
+  return paras
+}
+
+// ── Exports ───────────────────────────────────────────────────────────────────
 
 export async function downloadExpressDoc(
   learnerName: string,
   questionnaire: Questionnaire,
   responses: Responses,
-  keyNotes: Record<string, string>, // reportSectionId → prose
+  keyNotes: Record<string, string>,
 ): Promise<void> {
   const paras: Paragraph[] = []
 
-  // Cover
   paras.push(coverTitle('BGInfo Express'))
   paras.push(coverSubtitle(learnerName))
   paras.push(divider())
 
-  // ── Key Notes section ─────────────────────────────────────────────────────
-  paras.push(sectionHeading('Background Information — Key Notes'))
+  paras.push(sectionHeading('Background Information - Key Notes'))
+  paras.push(...buildKeyNotesParagraphs(keyNotes))
 
-  const hasAnyKeyNotes = REPORT_SECTION_ORDER.some(id => keyNotes[id]?.trim())
-  if (!hasAnyKeyNotes) {
-    paras.push(greyNote('No key notes generated yet.'))
-  } else {
-    for (const sectionId of REPORT_SECTION_ORDER) {
-      const prose = keyNotes[sectionId]?.trim()
-      if (!prose) continue
-      paras.push(subsectionHeading(REPORT_SECTION_LABELS[sectionId] ?? sectionId))
-      // Each paragraph in the prose (split on double newline)
-      for (const para of prose.split(/\n\n+/).map(p => p.trim()).filter(Boolean)) {
-        paras.push(bodyParagraph(para))
-      }
-    }
-  }
-
-  // ── Raw Q&A section ───────────────────────────────────────────────────────
   paras.push(sectionHeading('Questionnaire Responses'))
-
   for (const section of questionnaire.sections) {
     paras.push(...buildRSectionParagraphs(section, responses))
   }
 
-  const doc = new Document({
-    styles: BASE_DOC_STYLES,
-    sections: [{ children: paras }],
-  })
-
+  const doc = new Document({ styles: BASE_DOC_STYLES, sections: [{ children: paras }] })
   const safeName = learnerName.replace(/[^a-z0-9 ]/gi, '').trim() || 'learner'
-  await saveDocx(doc, `BGInfo Express — ${safeName}.docx`)
+  await saveDocx(doc, `BGInfo Express - ${safeName}.docx`)
+}
+
+export async function downloadKeyNotesDoc(
+  learnerName: string,
+  keyNotes: Record<string, string>,
+): Promise<void> {
+  const paras: Paragraph[] = []
+
+  paras.push(coverTitle('BGInfo Express'))
+  paras.push(coverSubtitle(learnerName))
+  paras.push(divider())
+  paras.push(sectionHeading('Background Information - Key Notes'))
+  paras.push(...buildKeyNotesParagraphs(keyNotes))
+
+  const doc = new Document({ styles: BASE_DOC_STYLES, sections: [{ children: paras }] })
+  const safeName = learnerName.replace(/[^a-z0-9 ]/gi, '').trim() || 'learner'
+  await saveDocx(doc, `BGInfo Express - ${safeName} - Key Notes.docx`)
+}
+
+export async function downloadResponsesDoc(
+  learnerName: string,
+  variant: 'background' | 'visual',
+  questionnaire: Questionnaire,
+  responses: Responses,
+): Promise<void> {
+  const label = variant === 'visual' ? 'Visual Questionnaire' : 'Background Questionnaire'
+  const paras: Paragraph[] = [
+    coverTitle('BGInfo Express'),
+    coverSubtitle(`${learnerName} - ${label}`),
+    divider(),
+    sectionHeading('Questionnaire Responses'),
+  ]
+  for (const section of questionnaire.sections) {
+    paras.push(...buildRSectionParagraphs(section, responses))
+  }
+  const doc = new Document({ styles: BASE_DOC_STYLES, sections: [{ children: paras }] })
+  const safeName = learnerName.replace(/[^a-z0-9 ]/gi, '').trim() || 'learner'
+  const safeVariant = variant === 'visual' ? 'Visual' : 'Background'
+  await saveDocx(doc, `BGInfo Express - ${safeName} - ${safeVariant}.docx`)
 }
 
 // ── Learner draft export (used by AccessibilityToolbar Save button) ───────────
 
 export async function exportLearnerDraft(questionnaire: Questionnaire, responses: Responses): Promise<void> {
   const paras: Paragraph[] = [
-    coverTitle('BGInfo Express — Draft'),
+    coverTitle('BGInfo Express - Draft'),
     divider(),
     sectionHeading('Your Responses So Far'),
   ]
@@ -252,5 +295,5 @@ export async function exportLearnerDraft(questionnaire: Questionnaire, responses
     paras.push(...buildRSectionParagraphs(section, responses))
   }
   const doc = new Document({ styles: BASE_DOC_STYLES, sections: [{ children: paras }] })
-  await saveDocx(doc, 'BGInfo Express — draft.docx')
+  await saveDocx(doc, 'BGInfo Express - draft.docx')
 }

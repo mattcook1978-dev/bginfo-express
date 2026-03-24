@@ -86,7 +86,6 @@ export interface ExpressLearnerRecord {
   name: string
   firstName?: string
   lastName?: string
-  pronouns?: string
   code: string
   questionnaireType: QuestionnaireType
   importedQuestionnaireId?: string

@@ -34,6 +34,7 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
   const [autoImportMessage, setAutoImportMessage] = useState('')
   const [autoImportUrl, setAutoImportUrl] = useState('')
   const [linkCopied, setLinkCopied] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [pendingAutoImport, setPendingAutoImport] = useState<{
     data: ExportData
     matchedRecord: ExpressLearnerRecord
@@ -154,6 +155,11 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
   const handleRecordUpdate = (updated: ExpressLearnerRecord) => {
     setRecords(prev => prev.map(r => r.id === updated.id ? updated : r))
     setSelectedRecord(updated)
+  }
+
+  const handleFactoryReset = () => {
+    indexedDB.deleteDatabase('bginfo-express')
+    window.location.reload()
   }
 
   const handleDeleted = () => {
@@ -296,7 +302,8 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-10 grid grid-cols-2 gap-4">
+      <div className="max-w-lg mx-auto px-4 py-10 space-y-6">
+      <div className="grid grid-cols-2 gap-4">
         <button
           onClick={() => setView('learners')}
           className="bg-navy-800 border border-navy-700 hover:bg-navy-700 hover:border-primary-500/50 transition-all rounded-2xl p-6 text-left group"
@@ -320,6 +327,38 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
           <div className="font-bold text-white text-xl mb-1">Questionnaires</div>
           <div className="text-navy-300 text-sm">Build &amp; import</div>
         </button>
+      </div>
+
+        {/* Factory reset */}
+        <div className="border border-dashed border-red-900/50 rounded-xl p-4">
+          <p className="text-xs font-semibold text-red-400/70 uppercase tracking-wide mb-3">Dev — Factory Reset</p>
+          {!showResetConfirm ? (
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/40 rounded-lg text-sm font-medium transition-colors"
+            >
+              Reset all data
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-navy-300">This will delete all learner records, sessions, and questionnaires. Cannot be undone.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleFactoryReset}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Yes, reset everything
+                </button>
+                <button
+                  onClick={() => setShowResetConfirm(false)}
+                  className="px-4 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
