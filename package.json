@@ -1,0 +1,43 @@
+{
+  "name": "bginfo-express",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@netlify/blobs": "^10.7.4",
+    "@netlify/functions": "^5.1.5",
+    "docx": "^8.5.0",
+    "idb": "^8.0.0",
+    "jsonrepair": "^3.13.3",
+    "lucide-react": "^0.344.0",
+    "mammoth": "^1.12.0",
+    "pdfjs-dist": "^5.5.207",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
+    "@vitejs/plugin-basic-ssl": "^2.1.4",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.18",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.6"
+  }
+}

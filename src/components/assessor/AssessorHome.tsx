@@ -1,0 +1,326 @@
+import { useState, useEffect } from 'react'
+import { ChevronLeft, Users, BookOpen } from 'lucide-react'
+import type { ExpressLearnerRecord, PackageRecord, PackageVariant } from '../../types'
+import { loadAllAssessorRecords, updateAssessorRecord } from '../../lib/storage'
+import { hashCode, deriveKey, decrypt } from '../../lib/crypto'
+import LearnersScreen from './LearnersScreen'
+import LearnerDetail from './LearnerDetail'
+import AddLearnerModal from './AddLearnerModal'
+import QuestionnaireList from './QuestionnaireList'
+
+type View = 'hub' | 'learners' | 'detail' | 'questionnaires'
+
+interface AssessorHomeProps {
+  onBack: () => void
+  autoImportId?: string
+}
+
+interface ExportData {
+  codeHash: string
+  salt: string
+  questionnaireType: string
+  packageVariant: string
+  encryptedResponses: string
+  exportedAt: string
+}
+
+export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps) {
+  const [view, setView] = useState<View>('hub')
+  const [records, setRecords] = useState<ExpressLearnerRecord[]>([])
+  const [selectedRecord, setSelectedRecord] = useState<ExpressLearnerRecord | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [autoImportStatus, setAutoImportStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'not-found' | 'confirm-overwrite'>('idle')
+  const [autoImportMessage, setAutoImportMessage] = useState('')
+  const [autoImportUrl, setAutoImportUrl] = useState('')
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [pendingAutoImport, setPendingAutoImport] = useState<{
+    data: ExportData
+    matchedRecord: ExpressLearnerRecord
+    variant: PackageVariant
+    importId: string
+  } | null>(null)
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [view])
+
+  useEffect(() => {
+    loadAllAssessorRecords().then(setRecords).finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    if (!autoImportId || loading) return
+    void handleAutoImport(autoImportId)
+  }, [autoImportId, loading]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const doAutoImport = async (
+    data: ExportData,
+    matchedRecord: ExpressLearnerRecord,
+    variant: PackageVariant,
+    importId: string,
+  ) => {
+    const code = variant === 'visual'
+      ? matchedRecord.packages?.visual?.code
+      : (matchedRecord.packages?.remainder?.code ?? matchedRecord.code)
+    const salt = Uint8Array.from(atob(data.salt), c => c.charCodeAt(0))
+    const key = await deriveKey(code!, salt)
+    await decrypt(key, data.encryptedResponses)
+
+    const updatedPackages: Partial<Record<PackageVariant, PackageRecord>> = {
+      ...matchedRecord.packages,
+      [variant]: {
+        status: 'imported' as const,
+        encryptedResponses: data.encryptedResponses,
+        encryptedResponsesSalt: data.salt,
+        code,
+        importedAt: new Date().toISOString(),
+        importId,
+      },
+    }
+    await updateAssessorRecord(matchedRecord.id, { packages: updatedPackages, submitted: true })
+    const updated = { ...matchedRecord, packages: updatedPackages, submitted: true }
+    setRecords(prev => prev.map(r => r.id === updated.id ? updated : r))
+
+    setAutoImportStatus('success')
+    setAutoImportMessage(`Responses from ${matchedRecord.name} imported successfully.`)
+    setSelectedRecord(updated)
+    setView('detail')
+  }
+
+  const handleAutoImport = async (importId: string) => {
+    setAutoImportStatus('loading')
+    setAutoImportUrl(`${window.location.origin}/?import=${importId}`)
+    try {
+      const res = await fetch(`/api/retrieve?id=${importId}`)
+      if (res.status === 404 || res.status === 410) {
+        const alreadyImportedRecord = records.find(r =>
+          r.packages && Object.values(r.packages).some(p => p?.importId === importId)
+        )
+        if (alreadyImportedRecord) {
+          const variant: PackageVariant = Object.entries(alreadyImportedRecord.packages ?? {})
+            .find(([, p]) => p?.importId === importId)?.[0] as PackageVariant ?? 'remainder'
+          setPendingAutoImport({
+            data: null as unknown as ExportData,
+            matchedRecord: alreadyImportedRecord,
+            variant,
+            importId,
+          })
+          setAutoImportStatus('confirm-overwrite')
+          return
+        }
+        setAutoImportStatus('not-found')
+        setAutoImportMessage(res.status === 410 ? 'This link has expired.' : 'Responses not found — the link may have already been used.')
+        return
+      }
+      if (!res.ok) throw new Error('Fetch failed')
+
+      const data = await res.json() as ExportData
+      const variant: PackageVariant = data.packageVariant === 'visual' ? 'visual' : 'remainder'
+
+      let matchedRecord: ExpressLearnerRecord | null = null
+      for (const record of records) {
+        const code = variant === 'visual'
+          ? record.packages?.visual?.code
+          : (record.packages?.remainder?.code ?? record.code)
+        if (!code) continue
+        const hashed = await hashCode(code)
+        if (hashed === data.codeHash) { matchedRecord = record; break }
+      }
+
+      if (!matchedRecord) {
+        setAutoImportStatus('not-found')
+        setAutoImportMessage('No matching learner found. Make sure you are on the correct device.')
+        return
+      }
+
+      if (matchedRecord.packages?.[variant]?.status === 'imported') {
+        setPendingAutoImport({ data, matchedRecord, variant, importId })
+        setAutoImportStatus('confirm-overwrite')
+        return
+      }
+
+      await doAutoImport(data, matchedRecord, variant, importId)
+    } catch {
+      setAutoImportStatus('error')
+      setAutoImportMessage('Something went wrong. Please try again or import the file manually.')
+    }
+  }
+
+  const handleAdded = (record: ExpressLearnerRecord) => {
+    setRecords(prev => [...prev, record])
+  }
+
+  const handleRecordUpdate = (updated: ExpressLearnerRecord) => {
+    setRecords(prev => prev.map(r => r.id === updated.id ? updated : r))
+    setSelectedRecord(updated)
+  }
+
+  const handleDeleted = () => {
+    if (selectedRecord) {
+      setRecords(prev => prev.filter(r => r.id !== selectedRecord.id))
+      setSelectedRecord(null)
+      setView('learners')
+    }
+  }
+
+  // Loading overlay
+  if (autoImportStatus === 'loading') {
+    return (
+      <div className="min-h-screen bg-navy-900 flex items-center justify-center p-4">
+        <div className="bg-navy-800 border border-navy-700 rounded-2xl p-8 max-w-sm w-full text-center">
+          <div className="w-10 h-10 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-white font-semibold">Importing responses...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Duplicate confirmation
+  if (autoImportStatus === 'confirm-overwrite' && pendingAutoImport) {
+    const { data, matchedRecord, variant, importId } = pendingAutoImport
+    const canUpdate = !!data
+    return (
+      <div className="min-h-screen bg-navy-900 flex items-center justify-center p-4">
+        <div className="bg-navy-800 border border-navy-700 rounded-2xl p-8 max-w-sm w-full">
+          <p className="text-white font-semibold mb-3">Responses already imported</p>
+          <p className="text-navy-300 text-sm mb-3">
+            You've already imported responses for <span className="text-white font-medium">{matchedRecord.name}</span>.
+            {canUpdate ? ' If you continue, the existing responses will be replaced with this new submission.' : ''}
+          </p>
+          <p className="text-navy-400 text-sm mb-6">
+            Any key notes you've already generated won't be updated automatically — regenerate them from the learner record if needed.
+          </p>
+          <div className="flex flex-col gap-2">
+            {canUpdate && (
+              <button
+                onClick={async () => {
+                  setAutoImportStatus('loading')
+                  try {
+                    await doAutoImport(data, matchedRecord, variant, importId)
+                  } catch {
+                    setAutoImportStatus('error')
+                    setAutoImportMessage('Something went wrong. Please try again.')
+                  }
+                }}
+                className="w-full py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium transition-colors"
+              >
+                Update responses
+              </button>
+            )}
+            <button
+              onClick={() => {
+                setPendingAutoImport(null)
+                setAutoImportStatus('success')
+                setSelectedRecord(matchedRecord)
+                setView('detail')
+              }}
+              className="w-full py-3 bg-navy-700 hover:bg-navy-600 border border-navy-600 text-white rounded-xl font-medium transition-colors"
+            >
+              Go to {matchedRecord.name}'s record
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Error / not-found overlay
+  if (autoImportStatus === 'error' || autoImportStatus === 'not-found') {
+    return (
+      <div className="min-h-screen bg-navy-900 flex items-center justify-center p-4">
+        <div className="bg-navy-800 border border-navy-700 rounded-2xl p-8 max-w-sm w-full text-center">
+          <p className="text-red-400 font-semibold mb-2">Import failed</p>
+          <p className="text-navy-300 text-sm mb-6">{autoImportMessage}</p>
+          <button
+            onClick={async () => {
+              await navigator.clipboard.writeText(autoImportUrl)
+              setLinkCopied(true)
+              setTimeout(() => setLinkCopied(false), 2500)
+            }}
+            className="w-full py-3 bg-navy-700 hover:bg-navy-600 border border-navy-600 text-white rounded-xl font-medium transition-colors"
+          >
+            {linkCopied ? 'Link copied!' : 'Copy link to open on correct device'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (view === 'questionnaires') {
+    return <QuestionnaireList onBack={() => setView('hub')} />
+  }
+
+  if (view === 'detail' && selectedRecord) {
+    return (
+      <LearnerDetail
+        record={selectedRecord}
+        onBack={() => { setSelectedRecord(null); setView('learners') }}
+        onDeleted={handleDeleted}
+        onRecordUpdate={handleRecordUpdate}
+        importSuccessMessage={autoImportStatus === 'success' ? autoImportMessage : undefined}
+      />
+    )
+  }
+
+  if (view === 'learners') {
+    return (
+      <>
+        <LearnersScreen
+          records={records}
+          loading={loading}
+          onBack={() => setView('hub')}
+          onAddLearner={() => setShowAddModal(true)}
+          onSelectRecord={record => { setSelectedRecord(record); setView('detail') }}
+        />
+        {showAddModal && (
+          <AddLearnerModal onClose={() => setShowAddModal(false)} onAdded={handleAdded} />
+        )}
+      </>
+    )
+  }
+
+  // Hub
+  return (
+    <div className="min-h-screen bg-navy-900">
+      <div className="bg-navy-950 border-b border-navy-800 px-4 py-4">
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="p-2 rounded-lg hover:bg-navy-800 transition-colors text-navy-300 hover:text-white"
+            aria-label="Back"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <h1 className="font-bold text-white text-lg flex-1">Assessor Area</h1>
+        </div>
+      </div>
+
+      <div className="max-w-lg mx-auto px-4 py-10 grid grid-cols-2 gap-4">
+        <button
+          onClick={() => setView('learners')}
+          className="bg-navy-800 border border-navy-700 hover:bg-navy-700 hover:border-primary-500/50 transition-all rounded-2xl p-6 text-left group"
+        >
+          <div className="w-11 h-11 bg-primary-500/15 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-500/25 transition-colors">
+            <Users className="w-6 h-6 text-primary-400" />
+          </div>
+          <div className="font-bold text-white text-xl mb-1">Learners</div>
+          <div className="text-navy-300 text-sm">
+            {loading ? 'Loading...' : `${records.length} learner${records.length !== 1 ? 's' : ''}`}
+          </div>
+        </button>
+
+        <button
+          onClick={() => setView('questionnaires')}
+          className="bg-navy-800 border border-navy-700 hover:bg-navy-700 hover:border-primary-500/50 transition-all rounded-2xl p-6 text-left group"
+        >
+          <div className="w-11 h-11 bg-primary-500/15 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-500/25 transition-colors">
+            <BookOpen className="w-6 h-6 text-primary-400" />
+          </div>
+          <div className="font-bold text-white text-xl mb-1">Questionnaires</div>
+          <div className="text-navy-300 text-sm">Build &amp; import</div>
+        </button>
+      </div>
+    </div>
+  )
+}

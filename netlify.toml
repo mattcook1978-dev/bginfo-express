@@ -1,0 +1,45 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[functions."keypointsbank"]
+  timeout = 60
+
+[functions."upload"]
+  timeout = 30
+
+[functions."retrieve"]
+  timeout = 30
+
+[functions."map-sections"]
+  timeout = 60
+
+[[redirects]]
+  from = "/api/keypointsbank"
+  to = "/.netlify/functions/keypointsbank"
+  status = 200
+
+[[redirects]]
+  from = "/api/upload"
+  to = "/.netlify/functions/upload"
+  status = 200
+
+[[redirects]]
+  from = "/api/retrieve"
+  to = "/.netlify/functions/retrieve"
+  status = 200
+
+[[redirects]]
+  from = "/api/map-sections"
+  to = "/.netlify/functions/map-sections"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"

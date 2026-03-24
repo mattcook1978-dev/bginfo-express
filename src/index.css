@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-50 text-gray-900;
+}
+
+/* Reading ruler */
+.reading-ruler {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 44px; /* large touch target */
+  transform: translateY(-50%);
+  cursor: ns-resize;
+  touch-action: none;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+}
+
+.reading-ruler::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.75);
+}
+
+/* Prevent pull-to-refresh while ruler is being dragged */
+body.ruler-dragging {
+  overscroll-behavior-y: none;
+}
+
+/* Bionic reading bold */
+.bionic-bold {
+  font-weight: 800;
+}
+
+/* Pulse animation for mic */
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.mic-active {
+  animation: pulse-red 1s ease-in-out infinite;
+}
+
+/* Rich text editor placeholder */
+.rich-editor:empty::before {
+  content: attr(data-placeholder);
+  color: #4a5568;
+  pointer-events: none;
+}
+
+/* Rich text editor paragraph spacing */
+.rich-editor p {
+  margin-bottom: 0.75rem;
+}
+.rich-editor p:last-child {
+  margin-bottom: 0;
+}
+
+/* Speed reader word display */
+.speed-reader-word {
+  font-size: 3rem;
+  font-weight: 600;
+  text-align: center;
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
