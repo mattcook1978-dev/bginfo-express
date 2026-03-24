@@ -25,6 +25,9 @@
 [functions."questionnaire"]
   timeout = 60
 
+[functions."detect-types"]
+  timeout = 60
+
 [[redirects]]
   from = "/api/keypointsbank"
   to = "/.netlify/functions/keypointsbank"
@@ -48,6 +51,11 @@
 [[redirects]]
   from = "/api/questionnaire"
   to = "/.netlify/functions/questionnaire"
+  status = 200
+
+[[redirects]]
+  from = "/api/detect-types"
+  to = "/.netlify/functions/detect-types"
   status = 200
 
 [[headers]]
