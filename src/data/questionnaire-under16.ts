@@ -6,6 +6,7 @@ export const questionnaireUnder16: Questionnaire = {
     {
       id: '2',
       title: 'Health and Developmental History',
+      reportSectionId: 'bg-health',
       subsections: [
         {
           id: '2.1',
@@ -424,6 +425,7 @@ export const questionnaireUnder16: Questionnaire = {
     {
       id: '3',
       title: 'Family History',
+      reportSectionId: 'bg-family',
       questions: [
         {
           id: '3.1',
@@ -482,6 +484,7 @@ export const questionnaireUnder16: Questionnaire = {
     {
       id: '4',
       title: 'Linguistic History',
+      reportSectionId: 'bg-linguistic',
       questions: [
         {
           id: '4.1',
@@ -542,6 +545,7 @@ export const questionnaireUnder16: Questionnaire = {
     {
       id: '5',
       title: 'Educational History',
+      reportSectionId: 'bg-educational',
       questions: [
         {
           id: '5.1',
@@ -757,6 +761,7 @@ export const questionnaireUnder16: Questionnaire = {
     {
       id: '6',
       title: 'Current Situation',
+      reportSectionId: 'bg-current',
       subsections: [
         {
           id: '6.LIT',
@@ -972,6 +977,7 @@ export const questionnaireUnder16: Questionnaire = {
     {
       id: '7',
       title: 'Any Other Information',
+      reportSectionId: 'bg-further',
       questions: [
         {
           id: '7.1',

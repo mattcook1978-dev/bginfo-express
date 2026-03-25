@@ -11,6 +11,7 @@ export const questionnaireVisual: Questionnaire = {
     {
       id: 'vh',
       title: 'Visual Questionnaire',
+      reportSectionId: 'bg-health',
       questions: [
 
         {
