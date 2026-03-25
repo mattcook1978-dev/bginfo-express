@@ -428,25 +428,37 @@ If you have any questions, please get in touch.`
             <p className="text-navy-400 text-sm">Click "Generate Key Notes" to produce report-ready prose from the questionnaire responses.</p>
           )}
 
-          {(hasKeyNotes || generatingKeyNotes) && (
-            <div className="space-y-4">
-              {REPORT_SECTION_ORDER.map(sectionId => {
-                const label = REPORT_SECTION_LABELS[sectionId]
-                const value = keyNotes[sectionId] ?? ''
-                return (
-                  <div key={sectionId}>
-                    <label className="block text-xs font-semibold text-navy-300 mb-1.5 uppercase tracking-wide">{label}</label>
-                    <textarea
-                      value={value}
-                      onChange={e => handleKeyNoteChange(sectionId, e.target.value)}
-                      placeholder={`No key notes for ${label.toLowerCase()}.`}
-                      rows={3}
-                      className="w-full bg-navy-900 border border-navy-600 rounded-lg px-3 py-2 text-sm text-white placeholder-navy-600 focus:outline-none focus:border-primary-500 resize-y"
-                    />
-                  </div>
-                )
-              })}
-            </div>
+          {canDownload && (
+            <>
+              {!packageResponses.remainder && packageResponses.visual && (
+                <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                  Only Visual responses imported — key notes will cover visual history only.
+                </p>
+              )}
+              {packageResponses.remainder && !packageResponses.visual && packages.visual?.status !== undefined && (
+                <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                  Only Background responses imported — key notes will not include visual history.
+                </p>
+              )}
+              <div className="space-y-4">
+                {REPORT_SECTION_ORDER.map(sectionId => {
+                  const label = REPORT_SECTION_LABELS[sectionId]
+                  const value = keyNotes[sectionId] ?? ''
+                  return (
+                    <div key={sectionId}>
+                      <label className="block text-xs font-semibold text-navy-300 mb-1.5 uppercase tracking-wide">{label}</label>
+                      <textarea
+                        value={value}
+                        onChange={e => handleKeyNoteChange(sectionId, e.target.value)}
+                        placeholder={`No key notes for ${label.toLowerCase()}.`}
+                        rows={3}
+                        className="w-full bg-navy-900 border border-navy-600 rounded-lg px-3 py-2 text-sm text-white placeholder-navy-600 focus:outline-none focus:border-primary-500 resize-y"
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            </>
           )}
         </div>
 
