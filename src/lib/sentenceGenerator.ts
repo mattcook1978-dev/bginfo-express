@@ -2233,8 +2233,7 @@ export function generateKeyPoints(
       }
 
     } else if (isEmpty) {
-      // Unanswered non-free-text: show "No information provided" only if we have a bank entry
-      if (entry) result.push(`No information provided regarding ${entry.topic}.`)
+      // Unanswered questions are silently skipped
 
     } else if (q.type === 'multi_choice') {
       const arr = (Array.isArray(val) ? val : [String(val)]) as string[]
