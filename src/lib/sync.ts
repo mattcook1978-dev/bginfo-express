@@ -29,11 +29,7 @@ async function decryptPayload(key: CryptoKey, encoded: string): Promise<SyncPayl
 // ── Auth token helper ─────────────────────────────────────────────────────────
 
 async function getToken(): Promise<string | null> {
-  const { createClient } = await import('@supabase/supabase-js')
-  const supabase = createClient(
-    import.meta.env.VITE_SUPABASE_URL as string,
-    import.meta.env.VITE_SUPABASE_ANON_KEY as string,
-  )
+  const { supabase } = await import('./supabase')
   const { data } = await supabase.auth.getSession()
   return data.session?.access_token ?? null
 }

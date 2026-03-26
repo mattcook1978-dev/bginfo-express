@@ -16,7 +16,7 @@ import UnlockScreen from './components/auth/UnlockScreen'
 
 function AppInner() {
   const { user, encryptionKey, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
-  const { restoreFromCloud } = useSync()
+  const { restoreFromCloud, triggerUpload } = useSync()
   const [autoImportId] = useState<string | null>(() => {
     const id = new URLSearchParams(window.location.search).get('import')
     if (id) window.history.replaceState({}, '', window.location.pathname)
@@ -61,9 +61,10 @@ function AppInner() {
   }, [])
 
   const handleUnlocked = useCallback(async () => {
-    await restoreFromCloud()
+    const restored = await restoreFromCloud()
+    if (!restored) triggerUpload() // upload local data if nothing came from cloud
     setView('assessor-home')
-  }, [restoreFromCloud])
+  }, [restoreFromCloud, triggerUpload])
 
   // Show nothing while we check if the user is already logged in
   if (authLoading) return null
