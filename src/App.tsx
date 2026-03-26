@@ -17,6 +17,7 @@ import UnlockScreen from './components/auth/UnlockScreen'
 function AppInner() {
   const { user, encryptionKey, unlocking, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
   const { restoreFromCloud, triggerUpload } = useSync()
+  const [restoring, setRestoring] = useState(false)
   const [autoImportId] = useState<string | null>(() => {
     const id = new URLSearchParams(window.location.search).get('import')
     if (id) window.history.replaceState({}, '', window.location.pathname)
@@ -63,8 +64,10 @@ function AppInner() {
   // Whenever encryption key is set (any login path), sync with cloud
   useEffect(() => {
     if (!encryptionKey) return
+    setRestoring(true)
     void restoreFromCloud().then(restored => {
       if (!restored) triggerUpload()
+      setRestoring(false)
     })
   }, [encryptionKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -94,6 +97,16 @@ function AppInner() {
   // (don't show if signIn is already unlocking to avoid race condition)
   if (view === 'assessor-home' && user && !encryptionKey && !unlocking) {
     return <UnlockScreen onUnlocked={handleUnlocked} />
+  }
+
+  // Encryption key is set but cloud restore is in progress — wait before mounting AssessorHome
+  // so it reads IndexedDB after records have been written
+  if (view === 'assessor-home' && restoring) {
+    return (
+      <div className="min-h-screen bg-navy-900 flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
   }
 
   switch (view) {
