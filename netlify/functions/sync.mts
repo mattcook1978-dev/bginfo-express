@@ -23,22 +23,34 @@ export default async function handler(req: Request, context: Context) {
 
   // GET — download encrypted blob
   if (req.method === 'GET') {
-    const blob = await store.get(key, { type: 'json' }) as { encryptedData: string; updatedAt: string } | null
-    if (!blob) return new Response(JSON.stringify({ exists: false }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    })
-    return new Response(JSON.stringify({ exists: true, ...blob }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    try {
+      const blob = await store.get(key, { type: 'json' }) as { encryptedData: string; updatedAt: string } | null
+      console.log('[sync] GET', key, 'exists:', !!blob)
+      if (!blob) return new Response(JSON.stringify({ exists: false }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      return new Response(JSON.stringify({ exists: true, ...blob }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    } catch (err) {
+      console.error('[sync] GET error:', err)
+      return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: { 'Content-Type': 'application/json' } })
+    }
   }
 
   // PUT — upload encrypted blob
   if (req.method === 'PUT') {
-    const body = await req.json() as { encryptedData: string; updatedAt: string }
-    await store.set(key, JSON.stringify(body))
-    return new Response('OK', { status: 200 })
+    try {
+      const body = await req.json() as { encryptedData: string; updatedAt: string }
+      await store.set(key, JSON.stringify(body))
+      console.log('[sync] PUT', key, 'saved, updatedAt:', body.updatedAt)
+      return new Response('OK', { status: 200 })
+    } catch (err) {
+      console.error('[sync] PUT error:', err)
+      return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: { 'Content-Type': 'application/json' } })
+    }
   }
 
   return new Response('Method not allowed', { status: 405 })
