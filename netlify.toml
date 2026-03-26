@@ -58,6 +58,11 @@
   to = "/.netlify/functions/detect-types"
   status = 200
 
+[[redirects]]
+  from = "/api/user-keys"
+  to = "/.netlify/functions/user-keys"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]

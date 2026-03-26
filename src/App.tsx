@@ -10,9 +10,10 @@ import HomeScreen from './components/learner/HomeScreen'
 import QuestionFlow from './components/learner/QuestionFlow'
 import AssessorHome from './components/assessor/AssessorHome'
 import AuthScreen from './components/auth/AuthScreen'
+import RecoveryKeyModal from './components/auth/RecoveryKeyModal'
 
 function AppInner() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
   const [autoImportId] = useState<string | null>(() => {
     const id = new URLSearchParams(window.location.search).get('import')
     if (id) window.history.replaceState({}, '', window.location.pathname)
@@ -58,6 +59,11 @@ function AppInner() {
 
   // Show nothing while we check if the user is already logged in
   if (authLoading) return null
+
+  // Show recovery key modal over the top of everything after first login
+  if (pendingRecoveryKey) {
+    return <RecoveryKeyModal recoveryKey={pendingRecoveryKey} onConfirmed={onRecoveryKeyConfirmed} />
+  }
 
   // If trying to access assessor area and not logged in, show auth screen
   if (view === 'assessor-home' && !user) {
