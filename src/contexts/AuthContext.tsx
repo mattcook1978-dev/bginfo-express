@@ -46,23 +46,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── Unlock encryption key (called after any login method) ─────────────────
 
   const unlockKey = async (password: string): Promise<string | null> => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return 'Not logged in.'
-
-    const res = await fetch('/api/user-keys', {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    })
-    const data = await res.json() as {
-      exists: boolean
-      encrypted_key?: string
-      password_salt?: string
-    }
-
     try {
+      console.log('[unlock] getting session...')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { console.log('[unlock] no session'); return 'Not logged in.' }
+
+      console.log('[unlock] fetching user-keys...')
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+      const res = await fetch('/api/user-keys', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+      console.log('[unlock] user-keys response status:', res.status)
+
+      const data = await res.json() as {
+        exists: boolean
+        encrypted_key?: string
+        password_salt?: string
+      }
+      console.log('[unlock] keys exist:', data.exists)
+
       if (!data.exists) {
-        // First time — create and store key bundle
+        console.log('[unlock] creating key bundle...')
         const { bundle, ek } = await createKeyBundle(password)
-        await fetch('/api/user-keys', {
+        const postRes = await fetch('/api/user-keys', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -76,20 +85,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             recoveryKey: bundle.recoveryKey,
           }),
         })
+        console.log('[unlock] POST response status:', postRes.status)
         setEncryptionKey(ek)
         setPendingRecoveryKey(bundle.recoveryKey)
       } else {
-        // Returning user — unlock existing key
+        console.log('[unlock] decrypting key with password...')
         const ek = await unlockKeyWithPassword(
           data.encrypted_key!,
           data.password_salt!,
           password,
         )
         setEncryptionKey(ek)
+        console.log('[unlock] done')
       }
       return null
-    } catch {
-      return 'Incorrect password.'
+    } catch (err) {
+      console.error('[unlock] error:', err)
+      return `Unlock failed: ${err instanceof Error ? err.message : String(err)}`
     }
   }
 
