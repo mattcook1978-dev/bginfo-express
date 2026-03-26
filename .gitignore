@@ -3,3 +3,6 @@ dist
 dist-testlibrary
 .env
 .env.local
+
+# Local Netlify folder
+.netlify

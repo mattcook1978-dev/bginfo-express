@@ -11,9 +11,10 @@ import QuestionFlow from './components/learner/QuestionFlow'
 import AssessorHome from './components/assessor/AssessorHome'
 import AuthScreen from './components/auth/AuthScreen'
 import RecoveryKeyModal from './components/auth/RecoveryKeyModal'
+import UnlockScreen from './components/auth/UnlockScreen'
 
 function AppInner() {
-  const { user, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
+  const { user, encryptionKey, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
   const [autoImportId] = useState<string | null>(() => {
     const id = new URLSearchParams(window.location.search).get('import')
     if (id) window.history.replaceState({}, '', window.location.pathname)
@@ -73,6 +74,11 @@ function AppInner() {
         onSuccess={() => setView('assessor-home')}
       />
     )
+  }
+
+  // Logged in but encryption key not yet unlocked — prompt for password
+  if (view === 'assessor-home' && user && !encryptionKey) {
+    return <UnlockScreen onUnlocked={() => setView('assessor-home')} />
   }
 
   switch (view) {

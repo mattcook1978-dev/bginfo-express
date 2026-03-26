@@ -7,12 +7,13 @@ interface AuthContextValue {
   user: User | null
   encryptionKey: CryptoKey | null
   loading: boolean
-  pendingRecoveryKey: string | null        // set after register — show modal
+  pendingRecoveryKey: string | null
   onRecoveryKeyConfirmed: () => void
   signIn: (email: string, password: string) => Promise<string | null>
   signUp: (email: string, password: string) => Promise<string | null>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<string | null>
+  unlockKey: (password: string) => Promise<string | null>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -22,8 +23,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null)
   const [loading, setLoading] = useState(true)
   const [pendingRecoveryKey, setPendingRecoveryKey] = useState<string | null>(null)
-  // Stored temporarily so we can unlock after key setup
-  const [_pendingPassword, setPendingPassword] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -36,18 +35,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!session) {
         setEncryptionKey(null)
         setPendingRecoveryKey(null)
-        setPendingPassword(null)
       }
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  // ── Fetch and unlock encryption key after login ───────────────────────────
+  // ── Unlock encryption key (called after any login method) ─────────────────
 
-  const fetchAndUnlockKey = async (password: string) => {
+  const unlockKey = async (password: string): Promise<string | null> => {
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    if (!session) return 'Not logged in.'
 
     const res = await fetch('/api/user-keys', {
       headers: { Authorization: `Bearer ${session.access_token}` },
@@ -58,35 +56,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password_salt?: string
     }
 
-    if (!data.exists) {
-      // First login — create key bundle
-      const { bundle, ek } = await createKeyBundle(password)
-
-      await fetch('/api/user-keys', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          encryptedKey: bundle.encryptedKey,
-          passwordSalt: bundle.passwordSalt,
-          recoveryEncryptedKey: bundle.recoveryEncryptedKey,
-          recoverySalt: bundle.recoverySalt,
-          recoveryKey: bundle.recoveryKey,
-        }),
-      })
-
-      setEncryptionKey(ek)
-      setPendingRecoveryKey(bundle.recoveryKey)
-    } else {
-      // Returning user — unlock existing key
-      const ek = await unlockKeyWithPassword(
-        data.encrypted_key!,
-        data.password_salt!,
-        password,
-      )
-      setEncryptionKey(ek)
+    try {
+      if (!data.exists) {
+        // First time — create and store key bundle
+        const { bundle, ek } = await createKeyBundle(password)
+        await fetch('/api/user-keys', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            encryptedKey: bundle.encryptedKey,
+            passwordSalt: bundle.passwordSalt,
+            recoveryEncryptedKey: bundle.recoveryEncryptedKey,
+            recoverySalt: bundle.recoverySalt,
+            recoveryKey: bundle.recoveryKey,
+          }),
+        })
+        setEncryptionKey(ek)
+        setPendingRecoveryKey(bundle.recoveryKey)
+      } else {
+        // Returning user — unlock existing key
+        const ek = await unlockKeyWithPassword(
+          data.encrypted_key!,
+          data.password_salt!,
+          password,
+        )
+        setEncryptionKey(ek)
+      }
+      return null
+    } catch {
+      return 'Incorrect password.'
     }
   }
 
@@ -95,15 +96,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string): Promise<string | null> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) return 'Incorrect email or password.'
-    await fetchAndUnlockKey(password)
+    await unlockKey(password)
     return null
   }
 
   const signUp = async (email: string, password: string): Promise<string | null> => {
     const { error } = await supabase.auth.signUp({ email, password })
     if (error) return error.message
-    // Store password temporarily — key setup happens after email confirmation + first login
-    setPendingPassword(password)
     return null
   }
 
@@ -111,7 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut()
     setEncryptionKey(null)
     setPendingRecoveryKey(null)
-    setPendingPassword(null)
   }
 
   const resetPassword = async (email: string): Promise<string | null> => {
@@ -119,9 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error?.message ?? null
   }
 
-  const onRecoveryKeyConfirmed = () => {
-    setPendingRecoveryKey(null)
-  }
+  const onRecoveryKeyConfirmed = () => setPendingRecoveryKey(null)
 
   return (
     <AuthContext.Provider value={{
@@ -134,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signOut,
       resetPassword,
+      unlockKey,
     }}>
       {children}
     </AuthContext.Provider>
