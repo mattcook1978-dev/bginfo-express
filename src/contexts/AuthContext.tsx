@@ -7,6 +7,7 @@ interface AuthContextValue {
   user: User | null
   encryptionKey: CryptoKey | null
   loading: boolean
+  unlocking: boolean
   pendingRecoveryKey: string | null
   onRecoveryKeyConfirmed: () => void
   signIn: (email: string, password: string) => Promise<string | null>
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null)
   const [loading, setLoading] = useState(true)
+  const [unlocking, setUnlocking] = useState(false)
   const [pendingRecoveryKey, setPendingRecoveryKey] = useState<string | null>(null)
 
   useEffect(() => {
@@ -94,9 +96,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── Auth methods ──────────────────────────────────────────────────────────
 
   const signIn = async (email: string, password: string): Promise<string | null> => {
+    setUnlocking(true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) return 'Incorrect email or password.'
+    if (error) { setUnlocking(false); return 'Incorrect email or password.' }
     await unlockKey(password)
+    setUnlocking(false)
     return null
   }
 
@@ -124,6 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       encryptionKey,
       loading,
+      unlocking,
       pendingRecoveryKey,
       onRecoveryKeyConfirmed,
       signIn,

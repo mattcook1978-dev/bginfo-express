@@ -15,7 +15,7 @@ import RecoveryKeyModal from './components/auth/RecoveryKeyModal'
 import UnlockScreen from './components/auth/UnlockScreen'
 
 function AppInner() {
-  const { user, encryptionKey, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
+  const { user, encryptionKey, unlocking, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
   const { restoreFromCloud, triggerUpload } = useSync()
   const [autoImportId] = useState<string | null>(() => {
     const id = new URLSearchParams(window.location.search).get('import')
@@ -91,7 +91,8 @@ function AppInner() {
   }
 
   // Logged in but encryption key not yet unlocked — prompt for password
-  if (view === 'assessor-home' && user && !encryptionKey) {
+  // (don't show if signIn is already unlocking to avoid race condition)
+  if (view === 'assessor-home' && user && !encryptionKey && !unlocking) {
     return <UnlockScreen onUnlocked={handleUnlocked} />
   }
 
