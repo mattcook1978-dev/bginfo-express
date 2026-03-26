@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react'
 import type { AppView, Section } from './types'
 import { LearnerProvider, useLearner } from './contexts/LearnerContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { SyncProvider, useSync } from './contexts/SyncContext'
 import { questionnaireUnder16 } from './data/questionnaire-under16'
 import { questionnaire16plus } from './data/questionnaire-16plus'
 import { questionnaireVisual } from './lib/questionnaire'
@@ -15,6 +16,7 @@ import UnlockScreen from './components/auth/UnlockScreen'
 
 function AppInner() {
   const { user, encryptionKey, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
+  const { restoreFromCloud } = useSync()
   const [autoImportId] = useState<string | null>(() => {
     const id = new URLSearchParams(window.location.search).get('import')
     if (id) window.history.replaceState({}, '', window.location.pathname)
@@ -58,6 +60,11 @@ function AppInner() {
     setView('learner-questions')
   }, [])
 
+  const handleUnlocked = useCallback(async () => {
+    await restoreFromCloud()
+    setView('assessor-home')
+  }, [restoreFromCloud])
+
   // Show nothing while we check if the user is already logged in
   if (authLoading) return null
 
@@ -78,7 +85,7 @@ function AppInner() {
 
   // Logged in but encryption key not yet unlocked — prompt for password
   if (view === 'assessor-home' && user && !encryptionKey) {
-    return <UnlockScreen onUnlocked={() => setView('assessor-home')} />
+    return <UnlockScreen onUnlocked={handleUnlocked} />
   }
 
   switch (view) {
@@ -128,9 +135,11 @@ function AppInner() {
 export default function App() {
   return (
     <AuthProvider>
-      <LearnerProvider>
-        <AppInner />
-      </LearnerProvider>
+      <SyncProvider>
+        <LearnerProvider>
+          <AppInner />
+        </LearnerProvider>
+      </SyncProvider>
     </AuthProvider>
   )
 }

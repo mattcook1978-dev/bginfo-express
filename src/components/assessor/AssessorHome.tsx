@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, Users, BookOpen, LogOut } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSync } from '../../contexts/SyncContext'
 import type { ExpressLearnerRecord, PackageRecord, PackageVariant } from '../../types'
 import { loadAllAssessorRecords, updateAssessorRecord } from '../../lib/storage'
 import { hashCode, deriveKey, decrypt } from '../../lib/crypto'
@@ -27,6 +28,7 @@ interface ExportData {
 
 export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps) {
   const { signOut } = useAuth()
+  const { triggerUpload } = useSync()
   const [view, setView] = useState<View>('hub')
   const [records, setRecords] = useState<ExpressLearnerRecord[]>([])
   const [selectedRecord, setSelectedRecord] = useState<ExpressLearnerRecord | null>(null)
@@ -84,7 +86,7 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
     await updateAssessorRecord(matchedRecord.id, { packages: updatedPackages, submitted: true })
     const updated = { ...matchedRecord, packages: updatedPackages, submitted: true }
     setRecords(prev => prev.map(r => r.id === updated.id ? updated : r))
-
+    triggerUpload()
     setAutoImportStatus('success')
     setAutoImportMessage(`Responses from ${matchedRecord.name} imported successfully.`)
     setSelectedRecord(updated)
@@ -152,11 +154,13 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
 
   const handleAdded = (record: ExpressLearnerRecord) => {
     setRecords(prev => [...prev, record])
+    triggerUpload()
   }
 
   const handleRecordUpdate = (updated: ExpressLearnerRecord) => {
     setRecords(prev => prev.map(r => r.id === updated.id ? updated : r))
     setSelectedRecord(updated)
+    triggerUpload()
   }
 
   const handleFactoryReset = () => {
@@ -169,6 +173,7 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
       setRecords(prev => prev.filter(r => r.id !== selectedRecord.id))
       setSelectedRecord(null)
       setView('learners')
+      triggerUpload()
     }
   }
 
