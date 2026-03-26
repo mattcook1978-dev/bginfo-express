@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import type { AppView, Section } from './types'
 import { LearnerProvider, useLearner } from './contexts/LearnerContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
@@ -60,11 +60,17 @@ function AppInner() {
     setView('learner-questions')
   }, [])
 
-  const handleUnlocked = useCallback(async () => {
-    const restored = await restoreFromCloud()
-    if (!restored) triggerUpload() // upload local data if nothing came from cloud
+  // Whenever encryption key is set (any login path), sync with cloud
+  useEffect(() => {
+    if (!encryptionKey) return
+    void restoreFromCloud().then(restored => {
+      if (!restored) triggerUpload()
+    })
+  }, [encryptionKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleUnlocked = useCallback(() => {
     setView('assessor-home')
-  }, [restoreFromCloud, triggerUpload])
+  }, [])
 
   // Show nothing while we check if the user is already logged in
   if (authLoading) return null
