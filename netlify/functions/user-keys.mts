@@ -50,10 +50,7 @@ export default async function handler(req: Request, context: Context) {
   if (!token) return new Response('Unauthorised', { status: 401 })
 
   const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-  if (authError || !user) {
-    console.error('[user-keys] auth error:', authError?.message, authError?.status)
-    return new Response(JSON.stringify({ error: 'Unauthorised', detail: authError?.message }), { status: 401, headers: { 'Content-Type': 'application/json' } })
-  }
+  if (authError || !user) return new Response('Unauthorised', { status: 401 })
 
   const userId = user.id
 
