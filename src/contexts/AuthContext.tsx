@@ -61,6 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(timeout)
       console.log('[unlock] user-keys response status:', res.status)
 
+      if (!res.ok) {
+        let detail = ''
+        try { const j = await res.json() as { detail?: string }; detail = j.detail ?? '' } catch { /* empty */ }
+        console.error('[unlock] user-keys error:', res.status, detail)
+        return `Server error ${res.status}${detail ? ': ' + detail : ''}`
+      }
+
       const data = await res.json() as {
         exists: boolean
         encrypted_key?: string
