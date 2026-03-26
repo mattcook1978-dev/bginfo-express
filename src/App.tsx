@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import type { AppView, Section } from './types'
 import { LearnerProvider, useLearner } from './contexts/LearnerContext'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { questionnaireUnder16 } from './data/questionnaire-under16'
 import { questionnaire16plus } from './data/questionnaire-16plus'
 import { questionnaireVisual } from './lib/questionnaire'
@@ -8,8 +9,10 @@ import CodeEntry from './components/learner/CodeEntry'
 import HomeScreen from './components/learner/HomeScreen'
 import QuestionFlow from './components/learner/QuestionFlow'
 import AssessorHome from './components/assessor/AssessorHome'
+import AuthScreen from './components/auth/AuthScreen'
 
 function AppInner() {
+  const { user, loading: authLoading } = useAuth()
   const [autoImportId] = useState<string | null>(() => {
     const id = new URLSearchParams(window.location.search).get('import')
     if (id) window.history.replaceState({}, '', window.location.pathname)
@@ -52,6 +55,19 @@ function AppInner() {
     setCurrentSectionId(sectionId)
     setView('learner-questions')
   }, [])
+
+  // Show nothing while we check if the user is already logged in
+  if (authLoading) return null
+
+  // If trying to access assessor area and not logged in, show auth screen
+  if (view === 'assessor-home' && !user) {
+    return (
+      <AuthScreen
+        onBack={() => setView('learner-code-entry')}
+        onSuccess={() => setView('assessor-home')}
+      />
+    )
+  }
 
   switch (view) {
     case 'learner-code-entry':
@@ -99,8 +115,10 @@ function AppInner() {
 
 export default function App() {
   return (
-    <LearnerProvider>
-      <AppInner />
-    </LearnerProvider>
+    <AuthProvider>
+      <LearnerProvider>
+        <AppInner />
+      </LearnerProvider>
+    </AuthProvider>
   )
 }

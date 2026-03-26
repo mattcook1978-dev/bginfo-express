@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Users, BookOpen } from 'lucide-react'
+import { ChevronLeft, Users, BookOpen, LogOut } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 import type { ExpressLearnerRecord, PackageRecord, PackageVariant } from '../../types'
 import { loadAllAssessorRecords, updateAssessorRecord } from '../../lib/storage'
 import { hashCode, deriveKey, decrypt } from '../../lib/crypto'
@@ -25,6 +26,7 @@ interface ExportData {
 }
 
 export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps) {
+  const { signOut } = useAuth()
   const [view, setView] = useState<View>('hub')
   const [records, setRecords] = useState<ExpressLearnerRecord[]>([])
   const [selectedRecord, setSelectedRecord] = useState<ExpressLearnerRecord | null>(null)
@@ -299,6 +301,14 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
             <ChevronLeft className="w-5 h-5" />
           </button>
           <h1 className="font-bold text-white text-lg flex-1">Assessor Area</h1>
+          <button
+            onClick={() => void signOut()}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-navy-400 hover:text-white hover:bg-navy-800 rounded-lg text-xs font-medium transition-colors"
+            title="Log out"
+          >
+            <LogOut className="w-4 h-4" />
+            Log out
+          </button>
         </div>
       </div>
 
