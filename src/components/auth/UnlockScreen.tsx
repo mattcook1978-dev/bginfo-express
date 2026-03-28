@@ -62,7 +62,7 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-yellow-400 hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 rounded-lg text-sm font-medium transition-colors"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Unlock

@@ -700,7 +700,7 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-2">
+      <div className="sticky top-0 z-10 bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-3 flex items-center gap-2">
         <button
           onClick={onBack}
           className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 text-sm transition-colors shrink-0"
@@ -746,7 +746,7 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 disabled:opacity-50 text-gray-900 rounded-lg text-sm font-medium transition-colors shrink-0"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Saving…' : 'Save & Publish'}

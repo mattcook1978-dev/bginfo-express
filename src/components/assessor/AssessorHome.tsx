@@ -216,7 +216,7 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
                     setAutoImportMessage('Something went wrong. Please try again.')
                   }
                 }}
-                className="w-full py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium transition-colors"
+                className="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-gray-900 rounded-xl font-medium transition-colors"
               >
                 Update responses
               </button>
@@ -296,7 +296,7 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
   // Hub
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
+      <div className="bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-4">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <button
             onClick={onBack}

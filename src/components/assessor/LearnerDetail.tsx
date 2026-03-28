@@ -286,7 +286,7 @@ If you have any questions, please get in touch.`
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
+      <div className="bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-4">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <button onClick={onBack} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900">
             <ChevronLeft className="w-5 h-5" />
@@ -296,7 +296,7 @@ If you have any questions, please get in touch.`
             onClick={handleDownload}
             disabled={!canDownload || !hasKeyNotes || downloading}
             title={!hasKeyNotes ? 'Generate key notes first' : undefined}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-yellow-400 hover:bg-yellow-500 disabled:opacity-40 disabled:cursor-not-allowed text-gray-900 rounded-lg text-sm font-medium transition-colors"
           >
             <Download className="w-4 h-4" />
             {downloading ? 'Preparing...' : 'Download all'}
@@ -411,7 +411,7 @@ If you have any questions, please get in touch.`
                 <button
                   onClick={() => void handleGenerateKeyNotes(false)}
                   disabled={!canDownload || generatingKeyNotes}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-yellow-400 hover:bg-yellow-500 disabled:opacity-40 disabled:cursor-not-allowed text-gray-900 rounded-lg text-xs font-medium transition-colors"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${generatingKeyNotes ? 'animate-spin' : ''}`} />
                   {generatingKeyNotes

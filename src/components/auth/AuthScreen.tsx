@@ -68,7 +68,7 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
+      <div className="bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-4">
         <div className="max-w-md mx-auto flex items-center gap-3">
           <button onClick={onBack} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900">
             <ChevronLeft className="w-5 h-5" />
@@ -137,7 +137,7 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-yellow-400 hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 rounded-lg text-sm font-medium transition-colors"
               >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {mode === 'login' ? 'Log in' : mode === 'register' ? 'Create account' : 'Send reset link'}
