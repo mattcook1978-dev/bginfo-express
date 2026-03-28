@@ -389,11 +389,11 @@ export default function QuestionnaireImport({ onBack, onReadyForBuilder }: Props
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-navy-700 shrink-0">
-        <button onClick={onBack} className="text-navy-400 hover:text-white transition-colors">
+      <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-gray-200 shrink-0">
+        <button onClick={onBack} className="text-gray-600 hover:text-gray-900 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h2 className="text-lg font-semibold text-white">Import Custom Questionnaire</h2>
+        <h2 className="text-lg font-semibold text-gray-900">Import Custom Questionnaire</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
@@ -401,7 +401,7 @@ export default function QuestionnaireImport({ onBack, onReadyForBuilder }: Props
         {/* ── Input ─────────────────────────────────────────────────────────── */}
         {stage === 'input' && (
           <div className="max-w-2xl space-y-5">
-            <p className="text-sm text-navy-400 leading-relaxed">
+            <p className="text-sm text-gray-600 leading-relaxed">
               Upload or paste your questionnaire below. The AI will identify sections, questions, and types — then open everything in the builder for you to review and edit before saving.
             </p>
 
@@ -410,38 +410,38 @@ export default function QuestionnaireImport({ onBack, onReadyForBuilder }: Props
               ref={dropRef}
               onDrop={handleDrop}
               onDragOver={e => e.preventDefault()}
-              className="flex items-center gap-3 p-4 border-2 border-dashed border-navy-600 rounded-xl cursor-pointer hover:border-primary-500 transition-colors"
+              className="flex items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-gray-900 transition-colors"
               onClick={() => fileRef.current?.click()}
             >
-              <Upload className="w-5 h-5 text-navy-400 shrink-0" />
+              <Upload className="w-5 h-5 text-gray-500 shrink-0" />
               <div>
-                <p className="text-sm text-navy-300">Upload a file or drag and drop here</p>
-                <p className="text-xs text-navy-500 mt-0.5">Supported: .pdf, .docx, .txt</p>
+                <p className="text-sm text-gray-700">Upload a file or drag and drop here</p>
+                <p className="text-xs text-gray-400 mt-0.5">Supported: .pdf, .docx, .txt</p>
               </div>
             </div>
             <input ref={fileRef} type="file" accept=".txt,.pdf,.docx" className="hidden" onChange={handleFileInputChange} />
 
             {/* Paste area */}
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-navy-200">Or paste text here</label>
+              <label className="block text-sm font-medium text-gray-700">Or paste text here</label>
               <textarea
                 value={rawText}
                 onChange={e => setRawText(e.target.value)}
                 onPaste={handlePaste}
                 placeholder="Paste your questionnaire text here…"
                 rows={14}
-                className="w-full bg-navy-800 border border-navy-600 rounded-xl px-3 py-2.5 text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-primary-500 resize-none"
+                className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900 resize-none"
               />
-              <p className={`text-xs ${charOverLimit ? 'text-amber-400' : 'text-navy-500'}`}>
+              <p className={`text-xs ${charOverLimit ? 'text-amber-600' : 'text-gray-400'}`}>
                 {charCount.toLocaleString()} characters
                 {charOverLimit && ' — this document is quite long. If analysis fails, try splitting it into sections and importing separately.'}
               </p>
             </div>
 
             {error && (
-              <div className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <p className="text-sm text-red-300">{error}</p>
+              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
 
@@ -459,24 +459,24 @@ export default function QuestionnaireImport({ onBack, onReadyForBuilder }: Props
         {/* ── Loading ───────────────────────────────────────────────────────── */}
         {stage === 'analysing' && (
           <div className="flex flex-col items-center justify-center gap-4 py-24">
-            <Loader className="w-8 h-8 text-primary-400 animate-spin" />
-            <p className="text-navy-300 text-sm text-center max-w-xs">{loadingStatus}</p>
+            <Loader className="w-8 h-8 text-gray-600 animate-spin" />
+            <p className="text-gray-600 text-sm text-center max-w-xs">{loadingStatus}</p>
           </div>
         )}
 
         {/* ── Error ─────────────────────────────────────────────────────────── */}
         {stage === 'error' && (
           <div className="max-w-2xl space-y-4">
-            <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-red-300 mb-1">Something went wrong</p>
-                <p className="text-sm text-red-400">{error}</p>
+                <p className="text-sm font-medium text-red-700 mb-1">Something went wrong</p>
+                <p className="text-sm text-red-600">{error}</p>
               </div>
             </div>
             <button
               onClick={() => { setStage('input'); setError('') }}
-              className="flex items-center gap-2 px-4 py-2 bg-navy-700 border border-navy-600 text-navy-200 rounded-lg text-sm hover:bg-navy-600 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
               Start over

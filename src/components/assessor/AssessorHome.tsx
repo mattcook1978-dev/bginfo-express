@@ -180,10 +180,10 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
   // Loading overlay
   if (autoImportStatus === 'loading') {
     return (
-      <div className="min-h-screen bg-navy-900 flex items-center justify-center p-4">
-        <div className="bg-navy-800 border border-navy-700 rounded-2xl p-8 max-w-sm w-full text-center">
-          <div className="w-10 h-10 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white font-semibold">Importing responses...</p>
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="bg-white border border-gray-200 rounded-2xl p-8 max-w-sm w-full text-center">
+          <div className="w-10 h-10 border-2 border-gray-900 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-900 font-semibold">Importing responses...</p>
         </div>
       </div>
     )
@@ -194,14 +194,14 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
     const { data, matchedRecord, variant, importId } = pendingAutoImport
     const canUpdate = !!data
     return (
-      <div className="min-h-screen bg-navy-900 flex items-center justify-center p-4">
-        <div className="bg-navy-800 border border-navy-700 rounded-2xl p-8 max-w-sm w-full">
-          <p className="text-white font-semibold mb-3">Responses already imported</p>
-          <p className="text-navy-300 text-sm mb-3">
-            You've already imported responses for <span className="text-white font-medium">{matchedRecord.name}</span>.
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="bg-white border border-gray-200 rounded-2xl p-8 max-w-sm w-full">
+          <p className="text-gray-900 font-semibold mb-3">Responses already imported</p>
+          <p className="text-gray-700 text-sm mb-3">
+            You've already imported responses for <span className="text-gray-900 font-medium">{matchedRecord.name}</span>.
             {canUpdate ? ' If you continue, the existing responses will be replaced with this new submission.' : ''}
           </p>
-          <p className="text-navy-400 text-sm mb-6">
+          <p className="text-gray-600 text-sm mb-6">
             Any key notes you've already generated won't be updated automatically — regenerate them from the learner record if needed.
           </p>
           <div className="flex flex-col gap-2">
@@ -228,7 +228,7 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
                 setSelectedRecord(matchedRecord)
                 setView('detail')
               }}
-              className="w-full py-3 bg-navy-700 hover:bg-navy-600 border border-navy-600 text-white rounded-xl font-medium transition-colors"
+              className="w-full py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-xl font-medium transition-colors"
             >
               Go to {matchedRecord.name}'s record
             </button>
@@ -241,17 +241,17 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
   // Error / not-found overlay
   if (autoImportStatus === 'error' || autoImportStatus === 'not-found') {
     return (
-      <div className="min-h-screen bg-navy-900 flex items-center justify-center p-4">
-        <div className="bg-navy-800 border border-navy-700 rounded-2xl p-8 max-w-sm w-full text-center">
-          <p className="text-red-400 font-semibold mb-2">Import failed</p>
-          <p className="text-navy-300 text-sm mb-6">{autoImportMessage}</p>
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="bg-white border border-gray-200 rounded-2xl p-8 max-w-sm w-full text-center">
+          <p className="text-red-600 font-semibold mb-2">Import failed</p>
+          <p className="text-gray-700 text-sm mb-6">{autoImportMessage}</p>
           <button
             onClick={async () => {
               await navigator.clipboard.writeText(autoImportUrl)
               setLinkCopied(true)
               setTimeout(() => setLinkCopied(false), 2500)
             }}
-            className="w-full py-3 bg-navy-700 hover:bg-navy-600 border border-navy-600 text-white rounded-xl font-medium transition-colors"
+            className="w-full py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-xl font-medium transition-colors"
           >
             {linkCopied ? 'Link copied!' : 'Copy link to open on correct device'}
           </button>
@@ -295,20 +295,20 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
 
   // Hub
   return (
-    <div className="min-h-screen bg-navy-900">
-      <div className="bg-navy-950 border-b border-navy-800 px-4 py-4">
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-2 rounded-lg hover:bg-navy-800 transition-colors text-navy-300 hover:text-white"
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900"
             aria-label="Back"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-bold text-white text-lg flex-1">Assessor Area</h1>
+          <h1 className="font-bold text-gray-900 text-lg flex-1">Assessor Area</h1>
           <button
             onClick={() => void signOut()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-navy-400 hover:text-white hover:bg-navy-800 rounded-lg text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg text-xs font-medium transition-colors"
             title="Log out"
           >
             <LogOut className="w-4 h-4" />
@@ -321,42 +321,42 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
       <div className="grid grid-cols-2 gap-4">
         <button
           onClick={() => setView('learners')}
-          className="bg-navy-800 border border-navy-700 hover:bg-navy-700 hover:border-primary-500/50 transition-all rounded-2xl p-6 text-left group"
+          className="bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-900 transition-all rounded-2xl p-6 text-left group"
         >
-          <div className="w-11 h-11 bg-primary-500/15 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-500/25 transition-colors">
-            <Users className="w-6 h-6 text-primary-400" />
+          <div className="w-11 h-11 bg-gray-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-100 transition-colors">
+            <Users className="w-6 h-6 text-gray-900" />
           </div>
-          <div className="font-bold text-white text-xl mb-1">Learners</div>
-          <div className="text-navy-300 text-sm">
+          <div className="font-bold text-gray-900 text-xl mb-1">Learners</div>
+          <div className="text-gray-700 text-sm">
             {loading ? 'Loading...' : `${records.length} learner${records.length !== 1 ? 's' : ''}`}
           </div>
         </button>
 
         <button
           onClick={() => setView('questionnaires')}
-          className="bg-navy-800 border border-navy-700 hover:bg-navy-700 hover:border-primary-500/50 transition-all rounded-2xl p-6 text-left group"
+          className="bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-900 transition-all rounded-2xl p-6 text-left group"
         >
-          <div className="w-11 h-11 bg-primary-500/15 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-500/25 transition-colors">
-            <BookOpen className="w-6 h-6 text-primary-400" />
+          <div className="w-11 h-11 bg-gray-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-100 transition-colors">
+            <BookOpen className="w-6 h-6 text-gray-900" />
           </div>
-          <div className="font-bold text-white text-xl mb-1">Questionnaires</div>
-          <div className="text-navy-300 text-sm">Build &amp; import</div>
+          <div className="font-bold text-gray-900 text-xl mb-1">Questionnaires</div>
+          <div className="text-gray-700 text-sm">Build &amp; import</div>
         </button>
       </div>
 
         {/* Factory reset */}
-        <div className="border border-dashed border-red-900/50 rounded-xl p-4">
-          <p className="text-xs font-semibold text-red-400/70 uppercase tracking-wide mb-3">Dev — Factory Reset</p>
+        <div className="border border-dashed border-red-200 rounded-xl p-4">
+          <p className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-3">Dev — Factory Reset</p>
           {!showResetConfirm ? (
             <button
               onClick={() => setShowResetConfirm(true)}
-              className="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/40 rounded-lg text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-sm font-medium transition-colors"
             >
               Reset all data
             </button>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-navy-300">This will delete all learner records, sessions, and questionnaires. Cannot be undone.</p>
+              <p className="text-sm text-gray-700">This will delete all learner records, sessions, and questionnaires. Cannot be undone.</p>
               <div className="flex gap-3">
                 <button
                   onClick={handleFactoryReset}
@@ -366,7 +366,7 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
                 </button>
                 <button
                   onClick={() => setShowResetConfirm(false)}
-                  className="px-4 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-lg text-sm font-medium transition-colors"
                 >
                   Cancel
                 </button>

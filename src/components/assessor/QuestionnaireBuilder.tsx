@@ -272,35 +272,35 @@ function QuestionEditor({ q, qId, depth, onChange, onDelete, dragHandle }: Quest
     onChange({ ...q, followUp: { ...q.followUp, questions: [...q.followUp.questions, newQuestion()] } })
   }
 
-  const bg = depth === 0 ? 'bg-navy-800' : 'bg-navy-850'
+  const bg = depth === 0 ? 'bg-white' : 'bg-gray-50'
 
   return (
-    <div className={`${bg} border border-navy-700 rounded-lg`}>
+    <div className={`${bg} border border-gray-200 rounded-lg`}>
       {/* Header row */}
       <div className="flex items-center gap-2 p-3">
         {dragHandle}
         <button
           onClick={() => setExpanded(e => !e)}
-          className="text-navy-500 hover:text-navy-300 shrink-0"
+          className="text-gray-400 hover:text-gray-600 shrink-0"
         >
           {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
         <div className="flex-1 min-w-0 flex items-center gap-2 overflow-hidden">
-          <span className="text-xs font-mono text-navy-500 shrink-0">{qId}</span>
-          {depth > 0 && <span className="text-xs text-navy-500 italic shrink-0">follow-up</span>}
+          <span className="text-xs font-mono text-gray-400 shrink-0">{qId}</span>
+          {depth > 0 && <span className="text-xs text-gray-400 italic shrink-0">follow-up</span>}
           {/* Type pill + preview text when collapsed */}
           {!expanded && (
             <>
               <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${TYPE_PILL[q.type]}`}>
                 {TYPE_LABEL[q.type]}
               </span>
-              {q.text && <span className="text-sm text-navy-300 truncate">{q.text}</span>}
+              {q.text && <span className="text-sm text-gray-700 truncate">{q.text}</span>}
             </>
           )}
         </div>
         <button
           onClick={onDelete}
-          className="text-navy-600 hover:text-red-400 shrink-0"
+          className="text-gray-400 hover:text-red-500 shrink-0"
           title="Delete question"
         >
           <Trash2 className="w-4 h-4" />
@@ -315,14 +315,14 @@ function QuestionEditor({ q, qId, depth, onChange, onDelete, dragHandle }: Quest
             onChange={e => onChange({ ...q, text: e.target.value })}
             placeholder="Question text…"
             rows={2}
-            className="w-full bg-navy-900 border border-navy-600 rounded px-2.5 py-1.5 text-sm text-white placeholder-navy-500 focus:outline-none focus:border-primary-500 resize-none"
+            className="w-full bg-gray-50 border border-gray-300 rounded px-2.5 py-1.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900 resize-none"
           />
 
           {/* Type selector */}
           <select
             value={q.type}
             onChange={e => onChange({ ...q, type: e.target.value as QuestionType, options: [], followUp: null })}
-            className="w-full bg-navy-900 border border-navy-600 rounded px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-primary-500"
+            className="w-full bg-gray-50 border border-gray-300 rounded px-2.5 py-1.5 text-sm text-gray-900 focus:outline-none focus:border-gray-900"
           >
             {QUESTION_TYPES.map(t => (
               <option key={t.value} value={t.value}>{t.label}</option>
@@ -332,18 +332,18 @@ function QuestionEditor({ q, qId, depth, onChange, onDelete, dragHandle }: Quest
           {/* Options (single / multi choice) */}
           {needsOptions && (
             <div className="space-y-2">
-              <p className="text-xs text-navy-400 font-medium">Answer options</p>
+              <p className="text-xs text-gray-600 font-medium">Answer options</p>
               {q.options.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {q.options.map((opt, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center gap-1 bg-navy-700 border border-navy-600 rounded-full px-2.5 py-1 text-sm text-white"
+                      className="inline-flex items-center gap-1 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-1 text-sm text-gray-900"
                     >
                       {opt}
                       <button
                         onClick={() => removeOption(i)}
-                        className="text-navy-400 hover:text-red-400 ml-0.5"
+                        className="text-gray-400 hover:text-red-500 ml-0.5"
                         aria-label={`Remove ${opt}`}
                       >
                         <X className="w-3 h-3" />
@@ -358,7 +358,7 @@ function QuestionEditor({ q, qId, depth, onChange, onDelete, dragHandle }: Quest
                 onChange={e => setNewOption(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addOption() } }}
                 placeholder="Type an option and press Enter…"
-                className="w-full bg-navy-900 border border-navy-600 rounded px-2.5 py-1.5 text-sm text-white placeholder-navy-500 focus:outline-none focus:border-primary-500"
+                className="w-full bg-gray-50 border border-gray-300 rounded px-2.5 py-1.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900"
               />
             </div>
           )}
@@ -368,7 +368,7 @@ function QuestionEditor({ q, qId, depth, onChange, onDelete, dragHandle }: Quest
             <div>
               <button
                 onClick={toggleFollowUp}
-                className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1"
+                className="text-xs text-gray-900 hover:text-gray-700 flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" />
                 {q.followUp ? 'Remove follow-up' : 'Add follow-up questions'}
@@ -377,11 +377,11 @@ function QuestionEditor({ q, qId, depth, onChange, onDelete, dragHandle }: Quest
               {q.followUp && (
                 <div className={`mt-2 pl-4 border-l-2 ${depthBorder(depth + 1)} space-y-2`}>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-navy-400">Show when answer is</span>
+                    <span className="text-xs text-gray-600">Show when answer is</span>
                     <select
                       value={q.followUp.trigger}
                       onChange={e => onChange({ ...q, followUp: { ...q.followUp!, trigger: e.target.value } })}
-                      className="bg-navy-900 border border-navy-600 rounded px-2 py-0.5 text-xs text-white focus:outline-none focus:border-primary-500"
+                      className="bg-gray-50 border border-gray-300 rounded px-2 py-0.5 text-xs text-gray-900 focus:outline-none focus:border-gray-900"
                     >
                       {triggers.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -400,7 +400,7 @@ function QuestionEditor({ q, qId, depth, onChange, onDelete, dragHandle }: Quest
 
                   <button
                     onClick={addFollowUpQ}
-                    className="flex items-center gap-1 text-xs text-navy-400 hover:text-white"
+                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900"
                   >
                     <Plus className="w-3 h-3" /> Add another follow-up
                   </button>
@@ -433,7 +433,7 @@ function SortableQuestion({ q, sectionIdx, qIdx, onChange, onDelete }: SortableQ
     <button
       {...attributes}
       {...listeners}
-      className="text-navy-500 hover:text-navy-300 cursor-grab active:cursor-grabbing shrink-0"
+      className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing shrink-0"
       title="Drag to reorder"
     >
       <GripVertical className="w-4 h-4" />
@@ -494,18 +494,18 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
   }
 
   return (
-    <div className="bg-navy-850 border border-navy-700 rounded-xl overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
       {/* Section header */}
       <div
-        className="flex items-center gap-2 px-3 py-2.5 bg-navy-800 border-b border-navy-700 cursor-pointer select-none"
+        className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 border-b border-gray-200 cursor-pointer select-none"
         onClick={onToggleCollapse}
       >
-        <span className="text-navy-500 shrink-0">
+        <span className="text-gray-400 shrink-0">
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </span>
-        <span className="flex-1 text-sm font-semibold text-white">{bs.title}</span>
+        <span className="flex-1 text-sm font-semibold text-gray-900">{bs.title}</span>
         {questionCount > 0 && (
-          <span className="text-xs font-medium bg-navy-700 text-navy-300 rounded-full px-2 py-0.5 shrink-0">
+          <span className="text-xs font-medium bg-gray-100 text-gray-600 rounded-full px-2 py-0.5 shrink-0">
             {questionCount} {questionCount === 1 ? 'question' : 'questions'}
           </span>
         )}
@@ -531,7 +531,7 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
 
           <button
             onClick={() => onChange({ ...bs, questions: [...bs.questions, newQuestion()] })}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-navy-400 hover:text-white hover:bg-navy-700 rounded-lg w-full transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg w-full transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Add question
@@ -546,13 +546,13 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
 
 function PreviewQuestion({ q, qId, depth }: { q: BQuestion; qId: string; depth: number }) {
   return (
-    <div className={depth > 0 ? 'pl-4 border-l-2 border-navy-700' : ''}>
+    <div className={depth > 0 ? 'pl-4 border-l-2 border-gray-300' : ''}>
       <div className="py-1.5">
         <div className="flex items-start gap-2">
-          <span className="text-xs font-mono text-navy-500 shrink-0 mt-0.5">{qId}</span>
+          <span className="text-xs font-mono text-gray-400 shrink-0 mt-0.5">{qId}</span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-white">
-              {q.text || <em className="text-navy-500">No question text</em>}
+            <p className="text-sm text-gray-900">
+              {q.text || <em className="text-gray-400">No question text</em>}
             </p>
             <span className={`inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full ${TYPE_PILL[q.type]}`}>
               {TYPE_LABEL[q.type]}
@@ -560,7 +560,7 @@ function PreviewQuestion({ q, qId, depth }: { q: BQuestion; qId: string; depth: 
             {q.options.length > 0 && (
               <div className="mt-1 flex flex-wrap gap-1">
                 {q.options.map((opt, i) => (
-                  <span key={i} className="text-xs bg-navy-700 text-navy-300 rounded px-1.5 py-0.5">
+                  <span key={i} className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">
                     {opt}
                   </span>
                 ))}
@@ -571,8 +571,8 @@ function PreviewQuestion({ q, qId, depth }: { q: BQuestion; qId: string; depth: 
       </div>
       {q.followUp && (
         <div className="ml-6 mt-0.5 space-y-0.5">
-          <p className="text-xs text-navy-500 italic">
-            If <span className="text-navy-400 font-medium">{q.followUp.trigger}</span>:
+          <p className="text-xs text-gray-400 italic">
+            If <span className="text-gray-600 font-medium">{q.followUp.trigger}</span>:
           </p>
           {q.followUp.questions.map((fq, fqi) => (
             <PreviewQuestion
@@ -592,13 +592,13 @@ function PreviewView({ name, sections }: { name: string; sections: BSection[] })
   const populated = sections.filter(s => s.questions.some(q => q.text.trim()))
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      {name && <h2 className="text-lg font-semibold text-white">{name}</h2>}
+      {name && <h2 className="text-lg font-semibold text-gray-900">{name}</h2>}
       {populated.length === 0 ? (
-        <p className="text-sm text-navy-400 italic">No questions added yet.</p>
+        <p className="text-sm text-gray-500 italic">No questions added yet.</p>
       ) : (
         populated.map((bs, si) => (
           <div key={bs.uid} className="space-y-1">
-            <h3 className="text-sm font-semibold text-primary-400 pb-1 border-b border-navy-700">
+            <h3 className="text-sm font-semibold text-gray-900 pb-1 border-b border-gray-200">
               {bs.title}
             </h3>
             <div className="space-y-0.5">
@@ -698,18 +698,18 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
   }
 
   return (
-    <div className="min-h-screen bg-navy-900 text-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
-      <div className="sticky top-0 z-10 bg-navy-900 border-b border-navy-700 px-4 py-3 flex items-center gap-2">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-2">
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 text-navy-400 hover:text-white text-sm transition-colors shrink-0"
+          className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 text-sm transition-colors shrink-0"
         >
           <ChevronLeft className="w-4 h-4" />
           Back
         </button>
 
-        <h1 className="text-sm font-semibold text-white flex-1 text-center">
+        <h1 className="text-sm font-semibold text-gray-900 flex-1 text-center">
           {isEditing ? 'Edit Questionnaire' : 'Build Questionnaire'}
         </h1>
 
@@ -718,7 +718,7 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
           onClick={handleUndo}
           disabled={!undoStack}
           title={undoStack ? `Undo delete: ${undoStack.label}` : 'Nothing to undo'}
-          className="p-1.5 rounded text-navy-400 hover:text-white hover:bg-navy-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+          className="p-1.5 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
         >
           <Undo2 className="w-4 h-4" />
         </button>
@@ -727,7 +727,7 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
         <button
           onClick={toggleCollapseAll}
           title={allCollapsed ? 'Expand all sections' : 'Collapse all sections'}
-          className="p-1.5 rounded text-navy-400 hover:text-white hover:bg-navy-800 transition-colors shrink-0"
+          className="p-1.5 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors shrink-0"
         >
           <ChevronsUpDown className="w-4 h-4" />
         </button>
@@ -736,7 +736,7 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
         <button
           onClick={() => setPreviewMode(p => !p)}
           title={previewMode ? 'Back to editor' : 'Preview questionnaire'}
-          className="flex items-center gap-1 p-1.5 rounded text-navy-400 hover:text-white hover:bg-navy-800 transition-colors shrink-0"
+          className="flex items-center gap-1 p-1.5 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors shrink-0"
         >
           {previewMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           <span className="hidden sm:inline text-xs">{previewMode ? 'Edit' : 'Preview'}</span>
@@ -759,13 +759,13 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
           {/* Questionnaire name */}
           <div>
-            <label className="block text-xs font-medium text-navy-400 mb-1.5">Questionnaire name</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">Questionnaire name</label>
             <input
               ref={nameInputRef}
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Adult Background Questionnaire"
-              className="w-full bg-navy-800 border border-navy-600 rounded-lg px-3 py-2 text-white placeholder-navy-500 focus:outline-none focus:border-primary-500 text-sm"
+              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900 text-sm"
             />
           </div>
 
@@ -787,13 +787,13 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
           </div>
 
           {error && (
-            <div className="bg-red-900/30 border border-red-500/40 rounded-lg px-4 py-3 text-sm text-red-300">
+            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
 
           {publishWarning && lastSaved && (
-            <div className="bg-amber-900/30 border border-amber-500/40 rounded-lg px-4 py-3 text-sm text-amber-300 flex items-start justify-between gap-3">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-700 flex items-start justify-between gap-3">
               <p>
                 Saved locally, but publishing failed. Learners won't be able to access this
                 questionnaire until it is published. Check that your publish secret is configured
@@ -801,7 +801,7 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
               </p>
               <button
                 onClick={() => onSaved(lastSaved)}
-                className="shrink-0 text-amber-200 underline hover:no-underline whitespace-nowrap"
+                className="shrink-0 text-amber-700 underline hover:no-underline whitespace-nowrap"
               >
                 Continue anyway
               </button>

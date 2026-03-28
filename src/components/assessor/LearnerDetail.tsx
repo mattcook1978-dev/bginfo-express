@@ -284,14 +284,14 @@ If you have any questions, please get in touch.`
   const canDownload = hasAnyImported && Object.keys(packageResponses).length > 0
 
   return (
-    <div className="min-h-screen bg-navy-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-navy-950 border-b border-navy-800 px-4 py-4">
+      <div className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="p-2 rounded-lg hover:bg-navy-800 transition-colors text-navy-300 hover:text-white">
+          <button onClick={onBack} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-bold text-white text-lg flex-1 truncate">{currentRecord.name}</h1>
+          <h1 className="font-bold text-gray-900 text-lg flex-1 truncate">{currentRecord.name}</h1>
           <button
             onClick={handleDownload}
             disabled={!canDownload || !hasKeyNotes || downloading}
@@ -308,17 +308,17 @@ If you have any questions, please get in touch.`
 
         {/* Import success banner */}
         {importSuccessMessage && (
-          <div className="bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3 text-green-400 text-sm">
+          <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm">
             {importSuccessMessage}
           </div>
         )}
 
         {/* Questionnaire packages */}
-        <div className="bg-navy-800 border border-navy-700 rounded-xl p-5 space-y-4">
-          <h2 className="font-semibold text-white text-sm">Questionnaires</h2>
+        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+          <h2 className="font-semibold text-gray-900 text-sm">Questionnaires</h2>
 
           {decryptError && (
-            <p className="text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{decryptError}</p>
+            <p className="text-red-600 text-xs bg-red-50 border border-red-200 rounded-lg px-3 py-2">{decryptError}</p>
           )}
 
           {(['remainder', 'visual'] as PackageVariant[]).map(variant => {
@@ -332,22 +332,22 @@ If you have any questions, please get in touch.`
               <div key={variant} className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-white">{label}</span>
+                    <span className="text-sm font-medium text-gray-900">{label}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                       isImported
-                        ? 'bg-green-500/15 text-green-400 border border-green-500/25'
-                        : 'bg-navy-700 text-navy-400 border border-navy-600'
+                        ? 'bg-green-50 text-green-700 border border-green-200'
+                        : 'bg-gray-100 text-gray-500 border border-gray-200'
                     }`}>
                       {isImported ? 'Imported' : 'Awaiting'}
                     </span>
                   </div>
-                  {code && <div className="text-xs text-navy-400 mt-0.5 font-mono">{code}</div>}
+                  {code && <div className="text-xs text-gray-500 mt-0.5 font-mono">{code}</div>}
                 </div>
 
                 {!isImported && (
                   <button
                     onClick={() => handleShare(variant)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-navy-700 hover:bg-navy-600 text-white rounded-lg text-xs font-medium transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-lg text-xs font-medium transition-colors"
                   >
                     {shareCopied === variant ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
                     {shareCopied === variant ? 'Copied!' : 'Share'}
@@ -358,7 +358,7 @@ If you have any questions, please get in touch.`
                   <button
                     onClick={() => void handleDownloadResponses(variant)}
                     disabled={downloadingResponses === variant}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-navy-700 hover:bg-navy-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed text-gray-900 rounded-lg text-xs font-medium transition-colors"
                     title="Download responses as Word doc"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -367,7 +367,7 @@ If you have any questions, please get in touch.`
                 )}
 
                 {/* Manual file import */}
-                <label className="flex items-center gap-1.5 px-3 py-1.5 bg-navy-700 hover:bg-navy-600 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer">
+                <label className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-lg text-xs font-medium transition-colors cursor-pointer">
                   <Upload className="w-3.5 h-3.5" />
                   {importingPackage === variant ? 'Importing...' : isImported ? 'Re-import' : 'Import file'}
                   <input
@@ -387,13 +387,13 @@ If you have any questions, please get in touch.`
         </div>
 
         {/* Key Notes */}
-        <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           <button
             onClick={() => setKeyNotesCollapsed(c => !c)}
-            className="w-full flex items-center justify-between gap-3 p-5 text-left hover:bg-navy-750 transition-colors"
+            className="w-full flex items-center justify-between gap-3 p-5 text-left hover:bg-gray-50 transition-colors"
           >
-            <h2 className="font-semibold text-white text-sm">Key Notes</h2>
-            <ChevronDown className={`w-4 h-4 text-navy-400 transition-transform ${keyNotesCollapsed ? '' : 'rotate-180'}`} />
+            <h2 className="font-semibold text-gray-900 text-sm">Key Notes</h2>
+            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${keyNotesCollapsed ? '' : 'rotate-180'}`} />
           </button>
 
           {!keyNotesCollapsed && (
@@ -403,7 +403,7 @@ If you have any questions, please get in touch.`
                   onClick={() => void handleDownloadKeyNotes()}
                   disabled={!hasKeyNotes || downloadingKeyNotes}
                   title={!hasKeyNotes ? 'Generate key notes first' : undefined}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-navy-700 hover:bg-navy-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed text-gray-900 rounded-lg text-xs font-medium transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
                   {downloadingKeyNotes ? 'Saving...' : 'Download key notes'}
@@ -423,28 +423,28 @@ If you have any questions, please get in touch.`
               </div>
 
               {keyNotesStale && (
-                <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                <p className="text-amber-700 text-xs bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                   The questionnaire has been updated since the key points bank was last generated. Regenerate to get up-to-date notes.
                 </p>
               )}
 
               {!canDownload && (
-                <p className="text-navy-400 text-sm">Import responses to generate key notes.</p>
+                <p className="text-gray-500 text-sm">Import responses to generate key notes.</p>
               )}
 
               {canDownload && !hasKeyNotes && !generatingKeyNotes && (
-                <p className="text-navy-400 text-sm">Click "Generate Key Notes" to produce report-ready prose from the questionnaire responses.</p>
+                <p className="text-gray-500 text-sm">Click "Generate Key Notes" to produce report-ready prose from the questionnaire responses.</p>
               )}
 
               {canDownload && (
                 <>
                   {!packageResponses.remainder && packageResponses.visual && (
-                    <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                    <p className="text-amber-700 text-xs bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                       Only Visual responses imported — key notes will cover visual history only.
                     </p>
                   )}
                   {packageResponses.remainder && !packageResponses.visual && packages.visual?.status !== undefined && (
-                    <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                    <p className="text-amber-700 text-xs bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                       Only Background responses imported — key notes will not include visual history.
                     </p>
                   )}
@@ -454,13 +454,13 @@ If you have any questions, please get in touch.`
                       const value = keyNotes[sectionId] ?? ''
                       return (
                         <div key={sectionId}>
-                          <label className="block text-xs font-semibold text-navy-300 mb-1.5 uppercase tracking-wide">{label}</label>
+                          <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">{label}</label>
                           <textarea
                             value={value}
                             onChange={e => handleKeyNoteChange(sectionId, e.target.value)}
                             placeholder={`No key notes for ${label.toLowerCase()}.`}
                             rows={3}
-                            className="w-full bg-navy-900 border border-navy-600 rounded-lg px-3 py-2 text-sm text-white placeholder-navy-600 focus:outline-none focus:border-primary-500 resize-y"
+                            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900 resize-y"
                           />
                         </div>
                       )
@@ -473,19 +473,19 @@ If you have any questions, please get in touch.`
         </div>
 
         {/* Delete */}
-        <div className="bg-navy-800 border border-navy-700 rounded-xl p-5">
-          <h2 className="font-semibold text-white text-sm mb-3">Danger Zone</h2>
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h2 className="font-semibold text-gray-900 text-sm mb-3">Danger Zone</h2>
           {!showDeleteConfirm ? (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/40 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-sm font-medium transition-colors"
             >
               <Trash2 className="w-4 h-4" />
               Delete learner record
             </button>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-navy-300">This will permanently delete {currentRecord.name}'s record and all associated data. This cannot be undone.</p>
+              <p className="text-sm text-gray-700">This will permanently delete {currentRecord.name}'s record and all associated data. This cannot be undone.</p>
               <div className="flex gap-3">
                 <button
                   onClick={handleDelete}
@@ -495,7 +495,7 @@ If you have any questions, please get in touch.`
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="px-4 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-lg text-sm font-medium transition-colors"
                 >
                   Cancel
                 </button>

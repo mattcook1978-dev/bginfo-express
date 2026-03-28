@@ -103,8 +103,8 @@ function AppInner() {
   // so it reads IndexedDB after records have been written
   if (view === 'assessor-home' && restoring) {
     return (
-      <div className="min-h-screen bg-navy-900 flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }

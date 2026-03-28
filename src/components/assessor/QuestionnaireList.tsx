@@ -57,21 +57,21 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
   }
 
   return (
-    <div className="min-h-screen bg-navy-900">
-      <div className="bg-navy-950 border-b border-navy-800 px-4 py-4">
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-2 rounded-lg hover:bg-navy-800 transition-colors text-navy-300 hover:text-white"
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900"
             aria-label="Back"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-bold text-white text-lg flex-1">Questionnaires</h1>
+          <h1 className="font-bold text-gray-900 text-lg flex-1">Questionnaires</h1>
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setBuilderInitialData(null); setView('build') }}
-              className="flex items-center gap-1.5 px-3 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-lg text-sm font-medium transition-colors"
             >
               <Plus className="w-4 h-4" />
               Build
@@ -91,44 +91,44 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
 
         {/* Standard questionnaires */}
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-navy-400 uppercase tracking-wide px-1">Standard</p>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-1">Standard</p>
           {[
             { label: 'Under 16', sub: 'Parent/Carer questionnaire' },
             { label: '16 or over', sub: 'Individual questionnaire' },
             { label: 'Visual', sub: 'Visual history and difficulties' },
           ].map(q => (
-            <div key={q.label} className="bg-navy-800 border border-navy-700 rounded-xl px-4 py-3 flex items-center justify-between">
+            <div key={q.label} className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between">
               <div>
-                <div className="font-medium text-white text-sm">{q.label}</div>
-                <div className="text-xs text-navy-400 mt-0.5">{q.sub}</div>
+                <div className="font-medium text-gray-900 text-sm">{q.label}</div>
+                <div className="text-xs text-gray-500 mt-0.5">{q.sub}</div>
               </div>
-              <span className="text-xs text-navy-500 bg-navy-700 border border-navy-600 rounded px-2 py-0.5">Built-in</span>
+              <span className="text-xs text-gray-500 bg-gray-100 border border-gray-200 rounded px-2 py-0.5">Built-in</span>
             </div>
           ))}
         </div>
 
         {/* Custom questionnaires */}
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-navy-400 uppercase tracking-wide px-1">Custom</p>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-1">Custom</p>
           {questionnaires.length === 0 ? (
-            <div className="bg-navy-800 border border-dashed border-navy-600 rounded-xl p-6 text-center">
-              <p className="text-navy-400 text-sm">No custom questionnaires yet.</p>
-              <p className="text-navy-500 text-xs mt-1">Build a new one or import an existing document.</p>
+            <div className="bg-white border border-dashed border-gray-300 rounded-xl p-6 text-center">
+              <p className="text-gray-600 text-sm">No custom questionnaires yet.</p>
+              <p className="text-gray-400 text-xs mt-1">Build a new one or import an existing document.</p>
             </div>
           ) : (
           questionnaires.map(q => (
-            <div key={q.id} className="bg-navy-800 border border-navy-700 rounded-xl p-4 flex items-center gap-3">
+            <div key={q.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-white text-sm">{q.name}</span>
+                  <span className="font-medium text-gray-900 text-sm">{q.name}</span>
                   {q.publishedAt && (
-                    <span className="flex items-center gap-1 text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded px-1.5 py-0.5">
+                    <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-1.5 py-0.5">
                       <Globe className="w-3 h-3" />
                       Published
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-navy-400 mt-0.5">
+                <div className="text-xs text-gray-500 mt-0.5">
                   {new Date(q.createdAt).toLocaleDateString()} · {q.sections.length} section{q.sections.length !== 1 ? 's' : ''}
                 </div>
               </div>
@@ -142,7 +142,7 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
                   })
                   setView('build')
                 }}
-                className="p-1.5 rounded hover:bg-navy-700 hover:text-white text-navy-500 transition-colors"
+                className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
                 title="Edit"
               >
                 <Pencil className="w-4 h-4" />
@@ -152,7 +152,7 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
                   await deleteImportedQuestionnaire(q.id)
                   setQuestionnaires(prev => prev.filter(x => x.id !== q.id))
                 }}
-                className="p-1.5 rounded hover:bg-red-950/30 hover:text-red-400 text-navy-600 transition-colors"
+                className="p-1.5 rounded hover:bg-red-50 hover:text-red-600 text-gray-400 transition-colors"
                 title="Delete"
               >
                 <Trash2 className="w-4 h-4" />
