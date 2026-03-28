@@ -52,8 +52,8 @@ function YesNoAnswer({ value, onChange, buttons }: AnswerProps & { buttons: stri
           onClick={() => onChange(btn.toLowerCase().replace(/ /g, '_'))}
           className={`flex-1 py-4 px-4 rounded-xl border-2 font-semibold text-base transition-all min-h-[52px] ${
             value === btn.toLowerCase().replace(/ /g, '_')
-              ? 'bg-primary-500 text-white border-primary-500'
-              : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
+              ? 'bg-yellow-400 text-gray-900 border-yellow-400'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-yellow-400'
           }`}
         >
           {btn}
@@ -72,8 +72,8 @@ function SingleChoiceAnswer({ question, value, onChange }: AnswerProps) {
           onClick={() => onChange(option)}
           className={`w-full text-left py-4 px-5 rounded-xl border-2 font-medium transition-all min-h-[52px] ${
             value === option
-              ? 'bg-primary-500 text-white border-primary-500'
-              : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
+              ? 'bg-yellow-400 text-gray-900 border-yellow-400'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-yellow-400'
           }`}
         >
           {option}
@@ -108,8 +108,8 @@ function MultiChoiceAnswer({ question, value, onChange }: AnswerProps) {
           onClick={() => toggle(option)}
           className={`w-full text-left py-4 px-5 rounded-xl border-2 font-medium transition-all min-h-[52px] flex items-center gap-3 ${
             selected.includes(option)
-              ? 'bg-primary-500 text-white border-primary-500'
-              : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
+              ? 'bg-yellow-400 text-gray-900 border-yellow-400'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-yellow-400'
           }`}
         >
           <span
@@ -120,7 +120,7 @@ function MultiChoiceAnswer({ question, value, onChange }: AnswerProps) {
             }`}
           >
             {selected.includes(option) && (
-              <svg className="w-3 h-3 text-primary-500" viewBox="0 0 12 12" fill="currentColor">
+              <svg className="w-3 h-3 text-gray-900" viewBox="0 0 12 12" fill="currentColor">
                 <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             )}
@@ -348,7 +348,7 @@ export default function QuestionFlow({
           <p className="text-gray-600 mb-6">You have answered all the questions in this section.</p>
           <button
             onClick={onBack}
-            className="w-full py-4 bg-yellow-400 text-gray-900 rounded-xl font-semibold text-lg hover:bg-yellow-500 transition-colors"
+            className="w-full py-4 bg-gray-900 text-white rounded-xl font-semibold text-lg hover:bg-gray-700 transition-colors"
           >
             Back to Sections
           </button>
@@ -497,16 +497,16 @@ export default function QuestionFlow({
               <div className="flex items-center gap-2">
                 <div className="flex rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
                   <button onClick={() => setSrHalf(false)}
-                    className={`px-3 py-2 text-sm font-medium transition-colors ${!srHalf ? 'bg-primary-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                    className={`px-3 py-2 text-sm font-medium transition-colors ${!srHalf ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
                     Full
                   </button>
                   <button onClick={() => setSrHalf(true)}
-                    className={`px-3 py-2 text-sm font-medium transition-colors ${srHalf ? 'bg-primary-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                    className={`px-3 py-2 text-sm font-medium transition-colors ${srHalf ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
                     ½
                   </button>
                 </div>
                 <button onClick={() => { if (!srPlaying) { setSrIndex(0) } setSrPlaying(p => !p) }}
-                  className="flex-1 py-2 bg-yellow-400 text-gray-900 rounded-lg font-semibold hover:bg-yellow-500 transition-colors flex items-center justify-center gap-1.5">
+                  className="flex-1 py-2 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-700 transition-colors flex items-center justify-center gap-1.5">
                   {srPlaying ? <><Pause className="w-5 h-5" />Pause</> : <><Play className="w-5 h-5" />Play</>}
                 </button>
               </div>
@@ -557,7 +557,7 @@ export default function QuestionFlow({
             onClick={handleNext}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-semibold transition-colors min-h-[52px] ${
               isAnswered(currentQuestion)
-                ? 'bg-primary-500 text-white hover:bg-primary-600'
+                ? 'bg-gray-900 text-white hover:bg-gray-700'
                 : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
             }`}
           >

@@ -179,16 +179,16 @@ export default function DisplayModal({ onClose, questionText }: DisplayModalProp
               <div className="flex items-center gap-2">
                 <div className="flex rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
                   <button onClick={() => setSrHalf(false)}
-                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${!srHalf ? 'bg-primary-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${!srHalf ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
                     Full
                   </button>
                   <button onClick={() => setSrHalf(true)}
-                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${srHalf ? 'bg-primary-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${srHalf ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
                     ½
                   </button>
                 </div>
                 <button onClick={() => { if (!srPlaying) { setSrIndex(0) } setSrPlaying(p => !p) }}
-                  className="flex-1 py-1.5 bg-yellow-400 text-gray-900 rounded-lg font-medium hover:bg-yellow-500 transition-colors flex items-center justify-center gap-1.5 text-sm">
+                  className="flex-1 py-1.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-1.5 text-sm">
                   {srPlaying ? <><Pause className="w-4 h-4" />Pause</> : <><Play className="w-4 h-4" />Play</>}
                 </button>
               </div>
