@@ -77,10 +77,10 @@ export default function HomeScreen({ sections, onSectionSelect }: HomeScreenProp
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
+      <div className="bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="bg-primary-500 rounded-lg p-1.5">
-            <BookOpen className="w-5 h-5 text-white" />
+          <div className="bg-yellow-400 rounded-lg p-1.5">
+            <BookOpen className="w-5 h-5 text-gray-900" />
           </div>
           <div>
             <h1 className="font-bold text-gray-900 text-lg">BGInfo</h1>
@@ -209,7 +209,7 @@ export default function HomeScreen({ sections, onSectionSelect }: HomeScreenProp
             </p>
             <button
               onClick={() => { setSent(false) }}
-              className="w-full py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors"
+              className="w-full py-3 bg-yellow-400 text-gray-900 rounded-xl font-medium hover:bg-yellow-500 transition-colors"
             >
               Done
             </button>

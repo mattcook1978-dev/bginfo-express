@@ -79,7 +79,7 @@ export default function AccessibilityToolbar({
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-30 px-3 py-2">
+      <div className="fixed top-0 left-0 right-0 bg-white border-t-4 border-yellow-400 border-b border-gray-200 z-30 px-3 py-2">
         <div className="max-w-2xl mx-auto flex items-center gap-2">
           {/* Listen + Display share the available space equally */}
           {[listenBtn, displayBtn].map((btn, i) => (

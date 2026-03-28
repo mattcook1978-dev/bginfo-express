@@ -348,7 +348,7 @@ export default function QuestionFlow({
           <p className="text-gray-600 mb-6">You have answered all the questions in this section.</p>
           <button
             onClick={onBack}
-            className="w-full py-4 bg-primary-500 text-white rounded-xl font-semibold text-lg hover:bg-primary-600 transition-colors"
+            className="w-full py-4 bg-yellow-400 text-gray-900 rounded-xl font-semibold text-lg hover:bg-yellow-500 transition-colors"
           >
             Back to Sections
           </button>
@@ -506,7 +506,7 @@ export default function QuestionFlow({
                   </button>
                 </div>
                 <button onClick={() => { if (!srPlaying) { setSrIndex(0) } setSrPlaying(p => !p) }}
-                  className="flex-1 py-2 bg-primary-500 text-white rounded-lg font-semibold hover:bg-primary-600 transition-colors flex items-center justify-center gap-1.5">
+                  className="flex-1 py-2 bg-yellow-400 text-gray-900 rounded-lg font-semibold hover:bg-yellow-500 transition-colors flex items-center justify-center gap-1.5">
                   {srPlaying ? <><Pause className="w-5 h-5" />Pause</> : <><Play className="w-5 h-5" />Play</>}
                 </button>
               </div>

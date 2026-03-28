@@ -188,7 +188,7 @@ export default function DisplayModal({ onClose, questionText }: DisplayModalProp
                   </button>
                 </div>
                 <button onClick={() => { if (!srPlaying) { setSrIndex(0) } setSrPlaying(p => !p) }}
-                  className="flex-1 py-1.5 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors flex items-center justify-center gap-1.5 text-sm">
+                  className="flex-1 py-1.5 bg-yellow-400 text-gray-900 rounded-lg font-medium hover:bg-yellow-500 transition-colors flex items-center justify-center gap-1.5 text-sm">
                   {srPlaying ? <><Pause className="w-4 h-4" />Pause</> : <><Play className="w-4 h-4" />Play</>}
                 </button>
               </div>

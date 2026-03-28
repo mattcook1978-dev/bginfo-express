@@ -308,7 +308,7 @@ export default function CodeEntry({ onSuccess, onAssessorClick }: CodeEntryProps
             <button
               type="submit"
               disabled={loading || code.length < 4}
-              className="w-full py-4 bg-primary-500 text-white text-lg font-semibold rounded-xl hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="w-full py-4 bg-yellow-400 text-gray-900 text-lg font-semibold rounded-xl hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
