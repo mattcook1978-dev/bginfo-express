@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ChevronLeft, Download, Trash2, RefreshCw, Share2, Check, Upload } from 'lucide-react'
+import { ChevronLeft, ChevronDown, Download, Trash2, RefreshCw, Share2, Check, Upload } from 'lucide-react'
 import type { ExpressLearnerRecord, PackageVariant, PackageRecord, Responses, Questionnaire, KPEntry, ImportedQuestionnaire } from '../../types'
 import { updateAssessorRecord, deleteAssessorRecord, loadImportedQuestionnaire, saveImportedQuestionnaire } from '../../lib/storage'
 import { deriveKey, decrypt } from '../../lib/crypto'
@@ -39,6 +39,7 @@ export default function LearnerDetail({ record, onBack, onDeleted, onRecordUpdat
   const [importingPackage, setImportingPackage] = useState<PackageVariant | null>(null)
   const [backgroundQuestionnaire, setBackgroundQuestionnaire] = useState<Questionnaire | null>(null)
   const [importedQuestionnaire, setImportedQuestionnaire] = useState<ImportedQuestionnaire | null>(null)
+  const [keyNotesCollapsed, setKeyNotesCollapsed] = useState(true)
   const [keyNotes, setKeyNotes] = useState<Record<string, string>>(record.keyNotes ?? {})
   const [generatingKeyNotes, setGeneratingKeyNotes] = useState(false)
   const [generatingFirstTime, setGeneratingFirstTime] = useState(false)
@@ -386,79 +387,88 @@ If you have any questions, please get in touch.`
         </div>
 
         {/* Key Notes */}
-        <div className="bg-navy-800 border border-navy-700 rounded-xl p-5 space-y-4">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setKeyNotesCollapsed(c => !c)}
+            className="w-full flex items-center justify-between gap-3 p-5 text-left hover:bg-navy-750 transition-colors"
+          >
             <h2 className="font-semibold text-white text-sm">Key Notes</h2>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => void handleDownloadKeyNotes()}
-                disabled={!hasKeyNotes || downloadingKeyNotes}
-                title={!hasKeyNotes ? 'Generate key notes first' : undefined}
-                className="flex items-center gap-1.5 px-3 py-2 bg-navy-700 hover:bg-navy-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
-              >
-                <Download className="w-3.5 h-3.5" />
-                {downloadingKeyNotes ? 'Saving...' : 'Download key notes'}
-              </button>
-              <button
-                onClick={() => void handleGenerateKeyNotes(false)}
-                disabled={!canDownload || generatingKeyNotes}
-                className="flex items-center gap-1.5 px-3 py-2 bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${generatingKeyNotes ? 'animate-spin' : ''}`} />
-                {generatingKeyNotes
-                  ? generatingFirstTime
-                    ? 'Generating (first time - up to 1 min)...'
-                    : 'Generating...'
-                  : hasKeyNotes ? 'Regenerate' : '+ Generate Key Notes'}
-              </button>
-            </div>
-          </div>
+            <ChevronDown className={`w-4 h-4 text-navy-400 transition-transform ${keyNotesCollapsed ? '' : 'rotate-180'}`} />
+          </button>
 
-          {keyNotesStale && (
-            <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-              The questionnaire has been updated since the key points bank was last generated. Regenerate to get up-to-date notes.
-            </p>
-          )}
-
-          {!canDownload && (
-            <p className="text-navy-400 text-sm">Import responses to generate key notes.</p>
-          )}
-
-          {canDownload && !hasKeyNotes && !generatingKeyNotes && (
-            <p className="text-navy-400 text-sm">Click "Generate Key Notes" to produce report-ready prose from the questionnaire responses.</p>
-          )}
-
-          {canDownload && (
-            <>
-              {!packageResponses.remainder && packageResponses.visual && (
-                <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-                  Only Visual responses imported — key notes will cover visual history only.
-                </p>
-              )}
-              {packageResponses.remainder && !packageResponses.visual && packages.visual?.status !== undefined && (
-                <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-                  Only Background responses imported — key notes will not include visual history.
-                </p>
-              )}
-              <div className="space-y-4">
-                {REPORT_SECTION_ORDER.map(sectionId => {
-                  const label = REPORT_SECTION_LABELS[sectionId]
-                  const value = keyNotes[sectionId] ?? ''
-                  return (
-                    <div key={sectionId}>
-                      <label className="block text-xs font-semibold text-navy-300 mb-1.5 uppercase tracking-wide">{label}</label>
-                      <textarea
-                        value={value}
-                        onChange={e => handleKeyNoteChange(sectionId, e.target.value)}
-                        placeholder={`No key notes for ${label.toLowerCase()}.`}
-                        rows={3}
-                        className="w-full bg-navy-900 border border-navy-600 rounded-lg px-3 py-2 text-sm text-white placeholder-navy-600 focus:outline-none focus:border-primary-500 resize-y"
-                      />
-                    </div>
-                  )
-                })}
+          {!keyNotesCollapsed && (
+            <div className="px-5 pb-5 space-y-4">
+              <div className="flex items-center justify-end gap-2 flex-wrap">
+                <button
+                  onClick={() => void handleDownloadKeyNotes()}
+                  disabled={!hasKeyNotes || downloadingKeyNotes}
+                  title={!hasKeyNotes ? 'Generate key notes first' : undefined}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-navy-700 hover:bg-navy-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  {downloadingKeyNotes ? 'Saving...' : 'Download key notes'}
+                </button>
+                <button
+                  onClick={() => void handleGenerateKeyNotes(false)}
+                  disabled={!canDownload || generatingKeyNotes}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${generatingKeyNotes ? 'animate-spin' : ''}`} />
+                  {generatingKeyNotes
+                    ? generatingFirstTime
+                      ? 'Generating (first time - up to 1 min)...'
+                      : 'Generating...'
+                    : hasKeyNotes ? 'Regenerate' : '+ Generate Key Notes'}
+                </button>
               </div>
-            </>
+
+              {keyNotesStale && (
+                <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                  The questionnaire has been updated since the key points bank was last generated. Regenerate to get up-to-date notes.
+                </p>
+              )}
+
+              {!canDownload && (
+                <p className="text-navy-400 text-sm">Import responses to generate key notes.</p>
+              )}
+
+              {canDownload && !hasKeyNotes && !generatingKeyNotes && (
+                <p className="text-navy-400 text-sm">Click "Generate Key Notes" to produce report-ready prose from the questionnaire responses.</p>
+              )}
+
+              {canDownload && (
+                <>
+                  {!packageResponses.remainder && packageResponses.visual && (
+                    <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                      Only Visual responses imported — key notes will cover visual history only.
+                    </p>
+                  )}
+                  {packageResponses.remainder && !packageResponses.visual && packages.visual?.status !== undefined && (
+                    <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                      Only Background responses imported — key notes will not include visual history.
+                    </p>
+                  )}
+                  <div className="space-y-4">
+                    {REPORT_SECTION_ORDER.map(sectionId => {
+                      const label = REPORT_SECTION_LABELS[sectionId]
+                      const value = keyNotes[sectionId] ?? ''
+                      return (
+                        <div key={sectionId}>
+                          <label className="block text-xs font-semibold text-navy-300 mb-1.5 uppercase tracking-wide">{label}</label>
+                          <textarea
+                            value={value}
+                            onChange={e => handleKeyNoteChange(sectionId, e.target.value)}
+                            placeholder={`No key notes for ${label.toLowerCase()}.`}
+                            rows={3}
+                            className="w-full bg-navy-900 border border-navy-600 rounded-lg px-3 py-2 text-sm text-white placeholder-navy-600 focus:outline-none focus:border-primary-500 resize-y"
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </div>
 
