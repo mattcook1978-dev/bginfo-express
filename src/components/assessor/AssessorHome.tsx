@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Users, BookOpen, LogOut } from 'lucide-react'
+import { ChevronLeft, Users, BookOpen, LogOut, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSync } from '../../contexts/SyncContext'
+import { useSubscription } from '../../contexts/SubscriptionContext'
 import type { ExpressLearnerRecord, PackageRecord, PackageVariant } from '../../types'
 import { loadAllAssessorRecords, updateAssessorRecord } from '../../lib/storage'
 import { hashCode, deriveKey, decrypt } from '../../lib/crypto'
@@ -14,6 +15,7 @@ type View = 'hub' | 'learners' | 'detail' | 'questionnaires'
 
 interface AssessorHomeProps {
   onBack: () => void
+  onSubscription: () => void
   autoImportId?: string
 }
 
@@ -26,9 +28,10 @@ interface ExportData {
   exportedAt: string
 }
 
-export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps) {
+export default function AssessorHome({ onBack, onSubscription, autoImportId }: AssessorHomeProps) {
   const { signOut } = useAuth()
   const { triggerUpload } = useSync()
+  const { isActive, status: subStatus } = useSubscription()
   const [view, setView] = useState<View>('hub')
   const [records, setRecords] = useState<ExpressLearnerRecord[]>([])
   const [selectedRecord, setSelectedRecord] = useState<ExpressLearnerRecord | null>(null)
@@ -277,13 +280,15 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
   }
 
   if (view === 'learners') {
+    const atLimit = records.length >= 15 && !isActive
     return (
       <>
         <LearnersScreen
           records={records}
           loading={loading}
           onBack={() => setView('hub')}
-          onAddLearner={() => setShowAddModal(true)}
+          onAddLearner={atLimit ? onSubscription : () => setShowAddModal(true)}
+          addBlocked={atLimit}
           onSelectRecord={record => { setSelectedRecord(record); setView('detail') }}
         />
         {showAddModal && (
@@ -318,6 +323,27 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-10 space-y-6">
+
+        {/* Subscription banner — shown when lapsed or no subscription */}
+        {!isActive && subStatus !== 'loading' && (
+          <button
+            onClick={onSubscription}
+            className="w-full flex items-start gap-3 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors rounded-xl px-4 py-3 text-left"
+          >
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">
+                {subStatus === 'none' ? 'Start your free trial' : 'Subscription required'}
+              </p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                {subStatus === 'none'
+                  ? '30 days free, then £4.99/month. Tap to get started.'
+                  : 'Adding new learners is paused. Tap to renew.'}
+              </p>
+            </div>
+          </button>
+        )}
+
       <div className="grid grid-cols-2 gap-4">
         <button
           onClick={() => setView('learners')}

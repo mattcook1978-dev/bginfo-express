@@ -125,3 +125,4 @@ export type AppView =
   | 'learner-section'
   | 'learner-questions'
   | 'assessor-home'
+  | 'subscription'

@@ -3,6 +3,7 @@ import type { AppView, Section } from './types'
 import { LearnerProvider, useLearner } from './contexts/LearnerContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SyncProvider, useSync } from './contexts/SyncContext'
+import { SubscriptionProvider, useSubscription } from './contexts/SubscriptionContext'
 import { questionnaireUnder16 } from './data/questionnaire-under16'
 import { questionnaire16plus } from './data/questionnaire-16plus'
 import { questionnaireVisual } from './lib/questionnaire'
@@ -10,6 +11,7 @@ import CodeEntry from './components/learner/CodeEntry'
 import HomeScreen from './components/learner/HomeScreen'
 import QuestionFlow from './components/learner/QuestionFlow'
 import AssessorHome from './components/assessor/AssessorHome'
+import SubscriptionPage from './components/assessor/SubscriptionPage'
 import AuthScreen from './components/auth/AuthScreen'
 import RecoveryKeyModal from './components/auth/RecoveryKeyModal'
 import UnlockScreen from './components/auth/UnlockScreen'
@@ -17,13 +19,24 @@ import UnlockScreen from './components/auth/UnlockScreen'
 function AppInner() {
   const { user, encryptionKey, unlocking, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
   const { restoreFromCloud, triggerUpload } = useSync()
+  const { refresh: refreshSubscription } = useSubscription()
   const [restoring, setRestoring] = useState(false)
   const [autoImportId] = useState<string | null>(() => {
     const id = new URLSearchParams(window.location.search).get('import')
     if (id) window.history.replaceState({}, '', window.location.pathname)
     return id
   })
-  const [view, setView] = useState<AppView>(autoImportId ? 'assessor-home' : 'learner-code-entry')
+  const [subscriptionSuccess] = useState(() => {
+    const result = new URLSearchParams(window.location.search).get('subscription')
+    if (result) window.history.replaceState({}, '', window.location.pathname)
+    return result === 'success'
+  })
+  const [view, setView] = useState<AppView>(() => {
+    if (autoImportId) return 'assessor-home'
+    const sub = new URLSearchParams(window.location.search).get('subscription')
+    if (sub) return 'assessor-home'
+    return 'learner-code-entry'
+  })
   const [currentSectionId, setCurrentSectionId] = useState<string | undefined>()
   const { questionnaireType, packageVariant, importedQuestionnaire } = useLearner()
 
@@ -70,6 +83,11 @@ function AppInner() {
       setRestoring(false)
     })
   }, [encryptionKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // After returning from Stripe checkout, refresh subscription status
+  useEffect(() => {
+    if (subscriptionSuccess) void refreshSubscription()
+  }, [subscriptionSuccess]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUnlocked = useCallback(() => {
     setView('assessor-home')
@@ -144,9 +162,13 @@ function AppInner() {
       return (
         <AssessorHome
           onBack={() => setView('learner-code-entry')}
+          onSubscription={() => setView('subscription')}
           autoImportId={autoImportId ?? undefined}
         />
       )
+
+    case 'subscription':
+      return <SubscriptionPage onBack={() => setView('assessor-home')} />
 
     default:
       return null
@@ -157,9 +179,11 @@ export default function App() {
   return (
     <AuthProvider>
       <SyncProvider>
-        <LearnerProvider>
-          <AppInner />
-        </LearnerProvider>
+        <SubscriptionProvider>
+          <LearnerProvider>
+            <AppInner />
+          </LearnerProvider>
+        </SubscriptionProvider>
       </SyncProvider>
     </AuthProvider>
   )

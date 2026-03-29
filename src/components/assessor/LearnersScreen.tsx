@@ -6,10 +6,11 @@ interface LearnersScreenProps {
   loading: boolean
   onBack: () => void
   onAddLearner: () => void
+  addBlocked?: boolean
   onSelectRecord: (record: ExpressLearnerRecord) => void
 }
 
-export default function LearnersScreen({ records, loading, onBack, onAddLearner, onSelectRecord }: LearnersScreenProps) {
+export default function LearnersScreen({ records, loading, onBack, onAddLearner, addBlocked, onSelectRecord }: LearnersScreenProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-4">
@@ -24,10 +25,14 @@ export default function LearnersScreen({ records, loading, onBack, onAddLearner,
           <h1 className="font-bold text-gray-900 text-lg flex-1">Learners</h1>
           <button
             onClick={onAddLearner}
-            className="flex items-center gap-2 px-3 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 rounded-lg text-sm font-medium transition-colors"
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              addBlocked
+                ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'
+                : 'bg-yellow-400 hover:bg-yellow-500 text-gray-900'
+            }`}
           >
             <UserPlus className="w-4 h-4" />
-            Add
+            {addBlocked ? 'Limit reached' : 'Add'}
           </button>
         </div>
       </div>
