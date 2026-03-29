@@ -350,7 +350,7 @@ If you have any questions, please get in touch.`
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-lg text-xs font-medium transition-colors"
                   >
                     {shareCopied === variant ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
-                    {shareCopied === variant ? 'Copied!' : 'Share'}
+                    <span className="hidden sm:inline">{shareCopied === variant ? 'Copied!' : 'Share'}</span>
                   </button>
                 )}
 
@@ -362,14 +362,14 @@ If you have any questions, please get in touch.`
                     title="Download responses as Word doc"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    {downloadingResponses === variant ? 'Saving...' : 'Download'}
+                    <span className="hidden sm:inline">{downloadingResponses === variant ? 'Saving...' : 'Download'}</span>
                   </button>
                 )}
 
                 {/* Manual file import */}
                 <label className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-lg text-xs font-medium transition-colors cursor-pointer">
                   <Upload className="w-3.5 h-3.5" />
-                  {importingPackage === variant ? 'Importing...' : isImported ? 'Re-import' : 'Import file'}
+                  <span className="hidden sm:inline">{importingPackage === variant ? 'Importing...' : isImported ? 'Re-import' : 'Import file'}</span>
                   <input
                     type="file"
                     accept=".bginfo"

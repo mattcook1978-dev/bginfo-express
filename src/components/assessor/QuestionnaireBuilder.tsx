@@ -749,7 +749,7 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
           className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 disabled:opacity-50 text-gray-900 rounded-lg text-sm font-medium transition-colors shrink-0"
         >
           <Save className="w-4 h-4" />
-          {saving ? 'Saving…' : 'Save & Publish'}
+          <span className="hidden sm:inline">{saving ? 'Saving…' : 'Save & Publish'}</span>
         </button>
       </div>
 

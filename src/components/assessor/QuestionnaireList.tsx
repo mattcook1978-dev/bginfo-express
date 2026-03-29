@@ -74,14 +74,14 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
               className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-lg text-sm font-medium transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Build
+              <span className="hidden sm:inline">Build</span>
             </button>
             <button
               onClick={() => setView('import')}
               className="flex items-center gap-1.5 px-3 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 rounded-lg text-sm font-medium transition-colors"
             >
               <Upload className="w-4 h-4" />
-              Import
+              <span className="hidden sm:inline">Import</span>
             </button>
           </div>
         </div>

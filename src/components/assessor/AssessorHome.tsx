@@ -326,7 +326,7 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
           <div className="w-11 h-11 bg-gray-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-100 transition-colors">
             <Users className="w-6 h-6 text-gray-900" />
           </div>
-          <div className="font-bold text-gray-900 text-xl mb-1">Learners</div>
+          <div className="font-bold text-gray-900 text-base sm:text-xl mb-1">Learners</div>
           <div className="text-gray-700 text-sm">
             {loading ? 'Loading...' : `${records.length} learner${records.length !== 1 ? 's' : ''}`}
           </div>
@@ -339,7 +339,7 @@ export default function AssessorHome({ onBack, autoImportId }: AssessorHomeProps
           <div className="w-11 h-11 bg-gray-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-100 transition-colors">
             <BookOpen className="w-6 h-6 text-gray-900" />
           </div>
-          <div className="font-bold text-gray-900 text-xl mb-1">Questionnaires</div>
+          <div className="font-bold text-gray-900 text-base sm:text-xl mb-1">Questionnaires</div>
           <div className="text-gray-700 text-sm">Build &amp; import</div>
         </button>
       </div>
