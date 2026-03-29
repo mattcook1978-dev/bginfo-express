@@ -59,28 +59,48 @@ export default async function handler(req: Request, _context: Context) {
     event.type === 'customer.subscription.created' ||
     event.type === 'customer.subscription.updated'
   ) {
-    const sub = event.data.object as Stripe.Subscription
-    const userId = await getUserIdFromCustomer(sub.customer as string)
-    if (!userId) return new Response('OK', { status: 200 })
+    try {
+      const sub = event.data.object as Stripe.Subscription
+      const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id
+      const userId = await getUserIdFromCustomer(customerId)
+      if (!userId) return new Response('OK', { status: 200 })
 
-    await saveSubscription(userId, {
-      subscriptionId: sub.id,
-      status: sub.status,
-      currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
-      trialEnd: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
-      cancelAtPeriodEnd: sub.cancel_at_period_end,
-    })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const subAny = sub as any
+      const currentPeriodEnd = subAny.current_period_end
+        ? new Date(subAny.current_period_end * 1000).toISOString()
+        : null
+      const trialEnd = subAny.trial_end
+        ? new Date(subAny.trial_end * 1000).toISOString()
+        : null
+
+      await saveSubscription(userId, {
+        subscriptionId: sub.id,
+        status: sub.status,
+        currentPeriodEnd,
+        trialEnd,
+        cancelAtPeriodEnd: sub.cancel_at_period_end ?? false,
+      })
+    } catch (err) {
+      console.error('subscription event handler error:', err)
+      // Return 200 so Stripe doesn't keep retrying — checkout.session.completed already set status
+    }
   }
 
   if (event.type === 'customer.subscription.deleted') {
-    const sub = event.data.object as Stripe.Subscription
-    const userId = await getUserIdFromCustomer(sub.customer as string)
-    if (!userId) return new Response('OK', { status: 200 })
+    try {
+      const sub = event.data.object as Stripe.Subscription
+      const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id
+      const userId = await getUserIdFromCustomer(customerId)
+      if (!userId) return new Response('OK', { status: 200 })
 
-    await saveSubscription(userId, {
-      status: 'canceled',
-      cancelAtPeriodEnd: false,
-    })
+      await saveSubscription(userId, {
+        status: 'canceled',
+        cancelAtPeriodEnd: false,
+      })
+    } catch (err) {
+      console.error('subscription deleted handler error:', err)
+    }
   }
 
   return new Response('OK', { status: 200 })
