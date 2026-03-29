@@ -8,9 +8,10 @@ const YEARLY_PRICE_ID = 'price_1TGEwoIpGMCEUrHj58Ys8X7i'
 
 interface SubscriptionPageProps {
   onBack: () => void
+  gated?: boolean
 }
 
-export default function SubscriptionPage({ onBack }: SubscriptionPageProps) {
+export default function SubscriptionPage({ onBack, gated }: SubscriptionPageProps) {
   const { status, currentPeriodEnd, trialEnd, cancelAtPeriodEnd, refresh } = useSubscription()
   const [interval, setInterval] = useState<'monthly' | 'yearly'>('yearly')
   const [loading, setLoading] = useState(false)
@@ -56,9 +57,21 @@ export default function SubscriptionPage({ onBack }: SubscriptionPageProps) {
           <button onClick={onBack} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-bold text-gray-900 text-lg flex-1">Subscription</h1>
+          <h1 className="font-bold text-gray-900 text-lg flex-1">
+            {gated ? 'Subscribe to continue' : 'Subscription'}
+          </h1>
         </div>
       </div>
+
+      {gated && (
+        <div className="max-w-lg mx-auto px-4 pt-6">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+            {status === 'canceled' || status === 'none'
+              ? 'A subscription is required to access the Assessor Area. Your data is safe — subscribe or start a free trial to continue.'
+              : 'Your payment has failed and your grace period has ended. Please resubscribe to regain access.'}
+          </div>
+        </div>
+      )}
 
       <div className="max-w-lg mx-auto px-4 py-8 space-y-6">
 

@@ -19,7 +19,7 @@ import UnlockScreen from './components/auth/UnlockScreen'
 function AppInner() {
   const { user, encryptionKey, unlocking, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
   const { restoreFromCloud, triggerUpload } = useSync()
-  const { refresh: refreshSubscription } = useSubscription()
+  const { refresh: refreshSubscription, isActive, status: subStatus, currentPeriodEnd } = useSubscription()
   const [restoring, setRestoring] = useState(false)
   const [autoImportId] = useState<string | null>(() => {
     const id = new URLSearchParams(window.location.search).get('import')
@@ -125,6 +125,28 @@ function AppInner() {
         <div className="w-10 h-10 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
       </div>
     )
+  }
+
+  // Subscription gate — only applies once user is fully logged in and restored
+  if ((view === 'assessor-home' || view === 'subscription') && user && encryptionKey && !restoring) {
+    // Wait for subscription status to load before gating
+    if (subStatus === 'loading') {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="w-10 h-10 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )
+    }
+
+    // Grace period: past_due within 3 days of period end → warn but allow through
+    const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000
+    const inGracePeriod = subStatus === 'past_due' && currentPeriodEnd
+      && (Date.now() - new Date(currentPeriodEnd).getTime()) < THREE_DAYS_MS
+
+    // Hard gate: no active subscription and not in grace period
+    if (!isActive && !inGracePeriod && view !== 'subscription') {
+      return <SubscriptionPage onBack={() => setView('learner-code-entry')} gated />
+    }
   }
 
   switch (view) {

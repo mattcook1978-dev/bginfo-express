@@ -324,22 +324,16 @@ export default function AssessorHome({ onBack, onSubscription, autoImportId }: A
 
       <div className="max-w-lg mx-auto px-4 py-10 space-y-6">
 
-        {/* Subscription banner — shown when lapsed or no subscription */}
-        {!isActive && subStatus !== 'loading' && (
+        {/* Grace period warning — shown when past_due but still within 3 days */}
+        {subStatus === 'past_due' && (
           <button
             onClick={onSubscription}
-            className="w-full flex items-start gap-3 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors rounded-xl px-4 py-3 text-left"
+            className="w-full flex items-start gap-3 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors rounded-xl px-4 py-3 text-left"
           >
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-amber-800">
-                {subStatus === 'none' ? 'Start your free trial' : 'Subscription required'}
-              </p>
-              <p className="text-xs text-amber-700 mt-0.5">
-                {subStatus === 'none'
-                  ? '30 days free, then £4.99/month. Tap to get started.'
-                  : 'Adding new learners is paused. Tap to renew.'}
-              </p>
+              <p className="text-sm font-semibold text-red-800">Payment failed</p>
+              <p className="text-xs text-red-700 mt-0.5">Please update your payment method. Access will be suspended shortly.</p>
             </div>
           </button>
         )}
