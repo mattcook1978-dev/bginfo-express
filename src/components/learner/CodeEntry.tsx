@@ -263,7 +263,7 @@ export default function CodeEntry({ onSuccess, onAssessorClick }: CodeEntryProps
       <div className="w-full max-w-md">
         {/* App header */}
         <div className="text-center mb-8">
-          <img src="/Logo.png" alt="QUsable" className="h-12 mx-auto mb-3" />
+          <img src="/Logo.png" alt="QUsable" className="h-8 mx-auto mb-3" />
           <p className="text-gray-600 mt-2">Background Information for Dyslexia Assessment</p>
         </div>
 

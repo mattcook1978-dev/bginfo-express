@@ -30,7 +30,7 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
       <div className="w-full max-w-md space-y-4">
 
         <div className="text-center mb-2">
-          <img src="/Logo.png" alt="QUsable" className="h-10 mx-auto" />
+          <img src="/Logo.png" alt="QUsable" className="h-8 mx-auto" />
         </div>
 
         <div className="flex items-center gap-3 mb-6">
