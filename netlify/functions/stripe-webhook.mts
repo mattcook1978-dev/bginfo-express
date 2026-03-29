@@ -61,6 +61,7 @@ export default async function handler(req: Request, _context: Context) {
   ) {
     try {
       const sub = event.data.object as Stripe.Subscription
+      console.log('subscription event data:', JSON.stringify(sub, null, 2))
       const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id
       const userId = await getUserIdFromCustomer(customerId)
       if (!userId) return new Response('OK', { status: 200 })
