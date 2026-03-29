@@ -82,6 +82,9 @@ export default function SubscriptionPage({ onBack, gated }: SubscriptionPageProp
       )}
 
       <div className="max-w-lg mx-auto px-4 py-8 space-y-6">
+        <div className="text-center">
+          <img src="/Logo.png" alt="QUsable" className="h-10 mx-auto" />
+        </div>
 
         {/* Current status banner */}
         {isActive && (

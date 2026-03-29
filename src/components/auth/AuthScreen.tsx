@@ -81,6 +81,9 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
 
       <div className="flex-1 flex items-start justify-center px-4 pt-12">
         <div className="w-full max-w-md">
+          <div className="text-center mb-6">
+            <img src="/Logo.png" alt="QUsable" className="h-10 mx-auto" />
+          </div>
           <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
 
             {error && (

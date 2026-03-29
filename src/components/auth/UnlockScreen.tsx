@@ -29,6 +29,10 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start pt-20 px-4">
       <div className="w-full max-w-md space-y-4">
 
+        <div className="text-center mb-2">
+          <img src="/Logo.png" alt="QUsable" className="h-10 mx-auto" />
+        </div>
+
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
             <KeyRound className="w-5 h-5 text-gray-900" />
