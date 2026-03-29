@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { ChevronLeft, Check, Loader2 } from 'lucide-react'
+import { ChevronLeft, Check, Loader2, LogOut } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useSubscription } from '../../contexts/SubscriptionContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 const MONTHLY_PRICE_ID = 'price_1TGEwoIpGMCEUrHjKmoMvvjV'
 const YEARLY_PRICE_ID = 'price_1TGEwoIpGMCEUrHj58Ys8X7i'
@@ -13,6 +14,7 @@ interface SubscriptionPageProps {
 
 export default function SubscriptionPage({ onBack, gated }: SubscriptionPageProps) {
   const { status, currentPeriodEnd, trialEnd, cancelAtPeriodEnd, refresh } = useSubscription()
+  const { signOut } = useAuth()
   const [interval, setInterval] = useState<'monthly' | 'yearly'>('yearly')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -54,9 +56,15 @@ export default function SubscriptionPage({ onBack, gated }: SubscriptionPageProp
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-4">
         <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
+          {gated ? (
+            <button onClick={() => void signOut()} className="flex items-center gap-1.5 p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900">
+              <LogOut className="w-5 h-5" />
+            </button>
+          ) : (
+            <button onClick={onBack} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900">
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
           <h1 className="font-bold text-gray-900 text-lg flex-1">
             {gated ? 'Subscribe to continue' : 'Subscription'}
           </h1>
