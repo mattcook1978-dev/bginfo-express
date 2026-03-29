@@ -183,7 +183,6 @@ function AppInner() {
     case 'assessor-home':
       return (
         <AssessorHome
-          onBack={() => setView('learner-code-entry')}
           onSubscription={() => setView('subscription')}
           autoImportId={autoImportId ?? undefined}
         />

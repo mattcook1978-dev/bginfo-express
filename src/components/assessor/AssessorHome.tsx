@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Users, BookOpen, LogOut, AlertCircle } from 'lucide-react'
+import { Users, BookOpen, LogOut, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSync } from '../../contexts/SyncContext'
 import { useSubscription } from '../../contexts/SubscriptionContext'
@@ -14,7 +14,6 @@ import QuestionnaireList from './QuestionnaireList'
 type View = 'hub' | 'learners' | 'detail' | 'questionnaires'
 
 interface AssessorHomeProps {
-  onBack: () => void
   onSubscription: () => void
   autoImportId?: string
 }
@@ -28,7 +27,7 @@ interface ExportData {
   exportedAt: string
 }
 
-export default function AssessorHome({ onBack, onSubscription, autoImportId }: AssessorHomeProps) {
+export default function AssessorHome({ onSubscription, autoImportId }: AssessorHomeProps) {
   const { signOut } = useAuth()
   const { triggerUpload } = useSync()
   const { isActive, status: subStatus } = useSubscription()
@@ -301,29 +300,16 @@ export default function AssessorHome({ onBack, onSubscription, autoImportId }: A
   // Hub
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex justify-center py-1 mb-3">
-            <img src="/Logo.png" alt="QUsable" className="h-7" />
-          </div>
-          <div className="flex items-center gap-3">
-          <button
-            onClick={onBack}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900"
-            aria-label="Back"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <h1 className="font-bold text-gray-900 text-lg flex-1">Assessor Area</h1>
+      <div className="bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-3">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <img src="/Logo.png" alt="QUsable" className="h-7" />
           <button
             onClick={() => void signOut()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg text-xs font-medium transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
             title="Log out"
           >
-            <LogOut className="w-4 h-4" />
-            Log out
+            <LogOut className="w-5 h-5" />
           </button>
-        </div>
         </div>
       </div>
 
