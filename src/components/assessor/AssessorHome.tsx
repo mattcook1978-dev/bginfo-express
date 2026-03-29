@@ -302,7 +302,11 @@ export default function AssessorHome({ onBack, onSubscription, autoImportId }: A
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-4">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex justify-center py-1 mb-3">
+            <img src="/Logo.png" alt="QUsable" className="h-7" />
+          </div>
+          <div className="flex items-center gap-3">
           <button
             onClick={onBack}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:text-gray-900"
@@ -319,6 +323,7 @@ export default function AssessorHome({ onBack, onSubscription, autoImportId }: A
             <LogOut className="w-4 h-4" />
             Log out
           </button>
+        </div>
         </div>
       </div>
 
