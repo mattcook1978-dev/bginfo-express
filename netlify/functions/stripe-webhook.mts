@@ -61,19 +61,16 @@ export default async function handler(req: Request, _context: Context) {
   ) {
     try {
       const sub = event.data.object as Stripe.Subscription
-      console.log('subscription event data:', JSON.stringify(sub, null, 2))
       const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id
       const userId = await getUserIdFromCustomer(customerId)
       if (!userId) return new Response('OK', { status: 200 })
 
+      // In newer Stripe API versions, current_period_end moved to items.data[0]
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const subAny = sub as any
-      const currentPeriodEnd = subAny.current_period_end
-        ? new Date(subAny.current_period_end * 1000).toISOString()
-        : null
-      const trialEnd = subAny.trial_end
-        ? new Date(subAny.trial_end * 1000).toISOString()
-        : null
+      const periodEnd = subAny.current_period_end ?? subAny.items?.data?.[0]?.current_period_end
+      const currentPeriodEnd = periodEnd ? new Date(periodEnd * 1000).toISOString() : null
+      const trialEnd = subAny.trial_end ? new Date(subAny.trial_end * 1000).toISOString() : null
 
       await saveSubscription(userId, {
         subscriptionId: sub.id,
