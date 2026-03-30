@@ -402,7 +402,9 @@ export default function QuestionnaireImport({ onBack, onReadyForBuilder }: Props
         {stage === 'input' && (
           <div className="max-w-2xl space-y-5">
             <p className="text-sm text-gray-600 leading-relaxed">
-              Upload or paste your questionnaire below. The AI will identify sections, questions, and types — then open everything in the builder for you to review and edit before saving.
+              Upload or paste your blank questionnaire below. <strong>Please do not use a completed version or include any personal data.</strong>
+              <br /><br />
+              QUsable will identify sections, questions, and types - then open everything in the builder for you to review and edit before saving.
             </p>
 
             {/* File upload */}

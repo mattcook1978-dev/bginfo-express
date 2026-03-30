@@ -283,6 +283,105 @@ export async function downloadResponsesDoc(
   await saveDocx(doc, `BGInfo Express - ${safeName} - ${safeVariant}.docx`)
 }
 
+// ── Blank questionnaire export ───────────────────────────────────────────────
+
+function buildBlankQuestionParagraphs(question: Question, depth: number): Paragraph[] {
+  if (question.note === 'SECTION_HEADER' || question.note === 'SECTION_HEADER_VDQ') return []
+
+  const ind = depth > 0 ? { left: depth * IND } : undefined
+  const paras: Paragraph[] = [
+    new Paragraph({
+      children: [new TextRun({ text: question.text, bold: true, size: SZ_BODY, color: C_BODY, font: 'Arial' })],
+      indent: ind,
+      spacing: { before: 200, after: 60 },
+    }),
+  ]
+
+  const type = question.type
+  if (type === 'yes_no' || type === 'yes_no_notsure' || type === 'yes_no_notsure_prefernot') {
+    const opts = ['☐ Yes', '☐ No']
+    if (type === 'yes_no_notsure' || type === 'yes_no_notsure_prefernot') opts.push('☐ Not sure')
+    if (type === 'yes_no_notsure_prefernot') opts.push('☐ Prefer not to say')
+    paras.push(new Paragraph({
+      children: [new TextRun({ text: opts.join('     '), size: SZ_BODY, color: C_BODY, font: 'Arial' })],
+      indent: ind,
+      spacing: { before: 40, after: 100 },
+    }))
+  } else if ((type === 'single_choice' || type === 'multi_choice') && question.options?.length) {
+    for (const opt of question.options) {
+      paras.push(new Paragraph({
+        children: [new TextRun({ text: `☐  ${opt}`, size: SZ_BODY, color: C_BODY, font: 'Arial' })],
+        indent: ind ? { left: ind.left + IND } : { left: IND },
+        spacing: { before: 40, after: 40 },
+      }))
+    }
+  } else if (type === 'free_text') {
+    paras.push(new Paragraph({
+      children: [new TextRun({ text: '_'.repeat(60), size: SZ_BODY, color: 'AAAAAA', font: 'Arial' })],
+      indent: ind,
+      spacing: { before: 40, after: 40 },
+    }))
+    paras.push(new Paragraph({
+      children: [new TextRun({ text: '_'.repeat(60), size: SZ_BODY, color: 'AAAAAA', font: 'Arial' })],
+      indent: ind,
+      spacing: { before: 0, after: 100 },
+    }))
+  }
+
+  // Follow-up questions (shown unlabelled, indented)
+  if (question.followUps) {
+    for (const fu of question.followUps) {
+      paras.push(new Paragraph({
+        children: [new TextRun({ text: `If ${fu.condition}:`, italics: true, size: SZ_SMALL, color: C_GREY, font: 'Arial' })],
+        indent: ind ? { left: ind.left + IND } : { left: IND },
+        spacing: { before: 80, after: 20 },
+      }))
+      for (const fq of fu.questions) {
+        paras.push(...buildBlankQuestionParagraphs(fq, depth + 1))
+      }
+    }
+  }
+
+  return paras
+}
+
+function buildBlankSectionParagraphs(section: Section): Paragraph[] {
+  const paras: Paragraph[] = [
+    new Paragraph({
+      children: [new TextRun({ text: section.title, bold: true, color: C_DARK, size: SZ_H1, font: 'Arial' })],
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: C_DARK, space: 4 } },
+      spacing: { before: 560, after: 200 },
+    }),
+  ]
+  if (section.questions) {
+    for (const q of section.questions) paras.push(...buildBlankQuestionParagraphs(q, 0))
+  }
+  if (section.subsections) {
+    for (const sub of section.subsections) {
+      paras.push(new Paragraph({
+        children: [new TextRun({ text: sub.title, bold: true, color: C_MID, size: SZ_BODY, font: 'Arial' })],
+        spacing: { before: 320, after: 100 },
+      }))
+      for (const q of sub.questions) paras.push(...buildBlankQuestionParagraphs(q, 0))
+    }
+  }
+  return paras
+}
+
+export async function downloadBlankQuestionnaireDoc(name: string, sections: Section[]): Promise<void> {
+  const paras: Paragraph[] = [
+    coverTitle('QUsable'),
+    coverSubtitle(name),
+    divider(),
+  ]
+  for (const section of sections) {
+    paras.push(...buildBlankSectionParagraphs(section))
+  }
+  const doc = new Document({ styles: BASE_DOC_STYLES, sections: [{ children: paras }] })
+  const safeName = name.replace(/[^a-z0-9 ]/gi, '').trim() || 'questionnaire'
+  await saveDocx(doc, `QUsable - ${safeName}.docx`)
+}
+
 // ── Learner draft export (used by AccessibilityToolbar Save button) ───────────
 
 export async function exportLearnerDraft(questionnaire: Questionnaire, responses: Responses): Promise<void> {
