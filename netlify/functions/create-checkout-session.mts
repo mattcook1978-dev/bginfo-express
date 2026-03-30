@@ -4,7 +4,7 @@ import Stripe from 'stripe'
 import { getStore } from '@netlify/blobs'
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL!,
+  process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 )
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
