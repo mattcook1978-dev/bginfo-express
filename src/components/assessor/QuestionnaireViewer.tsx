@@ -27,7 +27,7 @@ function ViewQuestion({ q, qId, depth }: { q: Question; qId: string; depth: numb
     <div className={depth > 0 ? 'pl-4 border-l-2 border-gray-200' : ''}>
       <div className="py-1.5">
         <div className="flex items-start gap-2">
-          <span className="text-xs font-mono text-gray-400 shrink-0 mt-0.5 w-8">{qId}</span>
+          <span className="text-xs font-mono text-gray-400 shrink-0 mt-0.5 min-w-[2.5rem] text-right pr-1">{qId}</span>
           <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-900">{q.text}</p>
             <span className="inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
