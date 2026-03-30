@@ -30,7 +30,7 @@ interface ExportData {
 export default function AssessorHome({ onSubscription, autoImportId }: AssessorHomeProps) {
   const { signOut } = useAuth()
   const { triggerUpload } = useSync()
-  const { isActive, status: subStatus, atMonthlyLimit, monthlyCount, monthlyLimit, monthlyResetDate } = useSubscription()
+  const { status: subStatus, atMonthlyLimit, monthlyCount, monthlyLimit, monthlyResetDate } = useSubscription()
   const [view, setView] = useState<View>('hub')
   const [records, setRecords] = useState<ExpressLearnerRecord[]>([])
   const [selectedRecord, setSelectedRecord] = useState<ExpressLearnerRecord | null>(null)
