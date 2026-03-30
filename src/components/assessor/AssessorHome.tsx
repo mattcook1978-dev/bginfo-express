@@ -30,7 +30,7 @@ interface ExportData {
 export default function AssessorHome({ onSubscription, autoImportId }: AssessorHomeProps) {
   const { signOut } = useAuth()
   const { triggerUpload } = useSync()
-  const { isActive, status: subStatus } = useSubscription()
+  const { isActive, status: subStatus, atMonthlyLimit, monthlyCount, monthlyLimit, monthlyResetDate } = useSubscription()
   const [view, setView] = useState<View>('hub')
   const [records, setRecords] = useState<ExpressLearnerRecord[]>([])
   const [selectedRecord, setSelectedRecord] = useState<ExpressLearnerRecord | null>(null)
@@ -279,15 +279,17 @@ export default function AssessorHome({ onSubscription, autoImportId }: AssessorH
   }
 
   if (view === 'learners') {
-    const atLimit = records.length >= 15 && !isActive
     return (
       <>
         <LearnersScreen
           records={records}
           loading={loading}
           onBack={() => setView('hub')}
-          onAddLearner={atLimit ? onSubscription : () => setShowAddModal(true)}
-          addBlocked={atLimit}
+          onAddLearner={atMonthlyLimit ? () => {} : () => setShowAddModal(true)}
+          addBlocked={atMonthlyLimit}
+          monthlyCount={monthlyCount}
+          monthlyLimit={monthlyLimit}
+          monthlyResetDate={monthlyResetDate}
           onSelectRecord={record => { setSelectedRecord(record); setView('detail') }}
         />
         {showAddModal && (
@@ -339,7 +341,7 @@ export default function AssessorHome({ onSubscription, autoImportId }: AssessorH
           </div>
           <div className="font-bold text-gray-900 text-base sm:text-xl mb-1">Learners</div>
           <div className="text-gray-700 text-sm">
-            {loading ? 'Loading...' : `${records.length} learner${records.length !== 1 ? 's' : ''}`}
+            {loading ? 'Loading...' : `${records.length} learner${records.length !== 1 ? 's' : ''} · ${monthlyCount}/${monthlyLimit} this month`}
           </div>
         </button>
 

@@ -4,6 +4,8 @@ import type { QuestionnaireType, PackageVariant, ExpressLearnerRecord, ImportedQ
 import { saveAssessorRecord, loadAllImportedQuestionnaires } from '../../lib/storage'
 import { hashCode } from '../../lib/crypto'
 import { publishCodeMapping } from '../../lib/fetchQuestionnaire'
+import { supabase } from '../../lib/supabase'
+import { useSubscription } from '../../contexts/SubscriptionContext'
 
 interface AddLearnerModalProps {
   onClose: () => void
@@ -22,6 +24,7 @@ function generateInternalCode(qType: QuestionnaireType, variant: PackageVariant 
 }
 
 export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalProps) {
+  const { incrementMonthlyCount } = useSubscription()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [qType, setQType] = useState<QuestionnaireType>('under16')
@@ -49,6 +52,23 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
 
     setSaving(true)
     try {
+      // Check + increment monthly usage server-side before saving
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        const usageRes = await fetch('/api/increment-monthly-usage', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        })
+        if (usageRes.status === 429) {
+          setErrors({ general: 'You have reached your monthly limit of 15 learners. This resets on the 1st of next month.' })
+          return
+        }
+        if (!usageRes.ok) {
+          setErrors({ general: 'Could not verify usage limit. Please try again.' })
+          return
+        }
+      }
+
       const fullName = `${firstName.trim()} ${lastName.trim()}`
       const isCustom = selectedImportedId !== ''
       const code = generateInternalCode(qType, isCustom ? 'custom' : 'remainder')
@@ -76,6 +96,7 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
           await publishCodeMapping(codeHash, selectedImportedId)
         }
       }
+      incrementMonthlyCount()
       onAdded(record)
       setSavedRecord(record)
     } finally {
@@ -172,6 +193,9 @@ If you have any questions, please get in touch.`
         </div>
 
         <div className="p-5 space-y-4">
+          {errors.general && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{errors.general}</p>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">First Name</label>

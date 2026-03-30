@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy - QUsable</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+      color: #111;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+    h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+    h2 { font-size: 1.2rem; margin-top: 2.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid #ddd; padding-bottom: 0.25rem; }
+    p, li { margin-bottom: 0.75rem; }
+    ul { padding-left: 1.5rem; }
+    .meta { color: #555; font-size: 0.9rem; margin-bottom: 2rem; }
+    a { color: #1a56b0; }
+    .logo { font-family: sans-serif; font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; margin-bottom: 1rem; display: inline-block; }
+  </style>
+</head>
+<body>
+
+  <div class="logo">QUsable</div>
+  <h1>Privacy Policy</h1>
+  <p class="meta">Last updated: 29 March 2026</p>
+
+  <p>This Privacy Policy explains how QUsable ("we", "us", "our") collects, uses, and protects information when you use our service at <a href="https://qusable.com">qusable.com</a>.</p>
+
+  <p>QUsable is operated by a sole trader based in the United Kingdom. We are registered with the Information Commissioner's Office (ICO) as a data controller.</p>
+
+  <h2>1. Who this policy applies to</h2>
+  <p>This policy applies to two types of user:</p>
+  <ul>
+    <li><strong>Assessors</strong> - Dyslexia Diagnosticians and similar professionals who create an account to manage learner records.</li>
+    <li><strong>Learners</strong> - individuals completing a background questionnaire using an access code provided by their assessor.</li>
+  </ul>
+
+  <h2>2. What data we collect</h2>
+
+  <h3>Assessors</h3>
+  <ul>
+    <li><strong>Account data:</strong> email address and password (stored securely via Supabase Auth).</li>
+    <li><strong>Learner records:</strong> names, access codes, and questionnaire responses entered by assessors. These are encrypted with a key derived from your password before being stored.</li>
+    <li><strong>Subscription data:</strong> billing information is handled entirely by Stripe. We store a Stripe customer ID and your subscription status only.</li>
+    <li><strong>Recovery key:</strong> an encrypted copy of your encryption key is stored server-side to enable account recovery. See the <a href="/recovery-key-policy.html">Recovery Key Policy</a> for full details.</li>
+  </ul>
+
+  <h3>Learners</h3>
+  <ul>
+    <li><strong>Questionnaire responses:</strong> stored locally in your browser (IndexedDB), encrypted with a key derived from your access code. No learner data is sent to our servers unless you choose to submit your responses to your assessor.</li>
+    <li>We do not collect learner names, email addresses, or any other identifying information server-side.</li>
+  </ul>
+
+  <h2>3. How we use your data</h2>
+  <ul>
+    <li>To provide and maintain the QUsable service.</li>
+    <li>To authenticate assessors and protect access to their data.</li>
+    <li>To process subscription payments and manage account access.</li>
+    <li>To enable encrypted cloud sync of assessor data across devices.</li>
+    <li>To enable account recovery at the assessor's verified request.</li>
+  </ul>
+  <p>We do not use your data for advertising, profiling, or any purpose beyond operating the service.</p>
+
+  <h2>4. Legal basis for processing (UK GDPR)</h2>
+  <ul>
+    <li><strong>Contract performance:</strong> processing necessary to provide the service you have subscribed to.</li>
+    <li><strong>Legitimate interests:</strong> security, fraud prevention, service improvement.</li>
+    <li><strong>Legal obligation:</strong> compliance with applicable UK law.</li>
+  </ul>
+  <p>Learner questionnaire responses are processed by assessors under their own professional obligations. Assessors are responsible for ensuring they have an appropriate lawful basis for collecting and processing learner data.</p>
+
+  <h2>5. Data storage and security</h2>
+  <ul>
+    <li>All assessor learner records are encrypted client-side using AES-GCM (256-bit) with keys derived via PBKDF2 (600,000 iterations) before being transmitted or stored.</li>
+    <li>Learner responses are stored only in the browser's local storage unless the learner submits them to their assessor.</li>
+    <li>Encrypted data is stored on servers operated by Netlify, Inc. in the United States. Netlify is covered by the UK-US Data Bridge.</li>
+    <li>Authentication is managed by Supabase, Inc. Data is stored in EU-West (Ireland) region.</li>
+  </ul>
+
+  <h2>6. Data processors</h2>
+  <p>We use the following third-party processors:</p>
+  <ul>
+    <li><strong>Supabase</strong> - authentication and encryption key storage. <a href="https://supabase.com/privacy" target="_blank">Privacy Policy</a></li>
+    <li><strong>Netlify</strong> - hosting and encrypted data storage. <a href="https://www.netlify.com/privacy/" target="_blank">Privacy Policy</a></li>
+    <li><strong>Stripe</strong> - payment processing. <a href="https://stripe.com/gb/privacy" target="_blank">Privacy Policy</a></li>
+    <li><strong>Resend</strong> - transactional email (account confirmations, password resets). <a href="https://resend.com/privacy" target="_blank">Privacy Policy</a></li>
+    <li><strong>Anthropic</strong> - AI key notes generation. When an assessor generates key notes for a custom questionnaire, the questionnaire structure (question text and types) is sent to Anthropic's API. Learner responses are never sent to Anthropic. <a href="https://www.anthropic.com/privacy" target="_blank">Privacy Policy</a></li>
+  </ul>
+  <p>Each processor is bound by a Data Processing Agreement and we only share the minimum data necessary for them to perform their service.</p>
+
+  <h2>7. Data retention</h2>
+  <ul>
+    <li>Assessor account data is retained while your account is active and for up to 12 months after closure.</li>
+    <li>Encrypted learner records stored in cloud sync are retained while your account is active. You may delete individual records at any time.</li>
+    <li>Learner data stored locally in the browser is retained until the learner clears their browser storage.</li>
+    <li>Submitted learner responses stored on our servers are deleted when the assessor deletes the learner record, or automatically after 180 days, whichever is sooner.</li>
+    <li>Stripe retains billing records as required by law.</li>
+  </ul>
+
+  <h2>8. Your rights</h2>
+  <p>Under UK GDPR, you have the right to:</p>
+  <ul>
+    <li>Access the personal data we hold about you.</li>
+    <li>Correct inaccurate data.</li>
+    <li>Request deletion of your data ("right to be forgotten").</li>
+    <li>Restrict or object to processing.</li>
+    <li>Data portability.</li>
+    <li>Withdraw consent at any time (where processing is based on consent).</li>
+  </ul>
+  <p>To exercise any of these rights, contact us at <a href="mailto:privacy@qusable.com">privacy@qusable.com</a>. We will respond within 30 days.</p>
+  <p>You also have the right to lodge a complaint with the Information Commissioner's Office (ICO) at <a href="https://ico.org.uk" target="_blank">ico.org.uk</a>.</p>
+
+  <h2>9. Cookies</h2>
+  <p>QUsable does not use tracking or advertising cookies. We use only technically necessary browser storage (localStorage and IndexedDB) to operate the application.</p>
+
+  <h2>10. Children's data</h2>
+  <p>Learners may be under 18. Learner responses are collected by assessors as part of a professional dyslexia assessment process. Assessors are responsible for obtaining appropriate parental or guardian consent where required, in accordance with their professional obligations.</p>
+
+  <h2>11. Changes to this policy</h2>
+  <p>We may update this policy from time to time. Material changes will be communicated to assessors by email. The current version is always available at <a href="https://qusable.com/privacy.html">qusable.com/privacy.html</a>.</p>
+
+  <h2>12. Contact</h2>
+  <p>For any privacy-related questions, contact us at:<br />
+  <a href="mailto:privacy@qusable.com">privacy@qusable.com</a></p>
+
+</body>
+</html>

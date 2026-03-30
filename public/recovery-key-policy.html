@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recovery Key Policy - QUsable</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+      color: #111;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+    h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+    h2 { font-size: 1.2rem; margin-top: 2.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid #ddd; padding-bottom: 0.25rem; }
+    p, li { margin-bottom: 0.75rem; }
+    ul { padding-left: 1.5rem; }
+    .meta { color: #555; font-size: 0.9rem; margin-bottom: 2rem; }
+    a { color: #1a56b0; }
+    .logo { font-family: sans-serif; font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; margin-bottom: 1rem; display: inline-block; }
+    .callout {
+      background: #fff8e1;
+      border-left: 4px solid #f7c948;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      margin: 1.5rem 0;
+    }
+    .callout p { margin-bottom: 0; }
+    .warning {
+      background: #fff1f0;
+      border-left: 4px solid #cf1322;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      margin: 1.5rem 0;
+    }
+    .warning p { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+
+  <div class="logo">QUsable</div>
+  <h1>Recovery Key Policy</h1>
+  <p class="meta">Last updated: 29 March 2026</p>
+
+  <p>This document explains what your recovery key is, how it is stored, what it can be used for, and what happens if you lose it.</p>
+
+  <h2>1. Why encryption matters</h2>
+  <p>All learner records stored in QUsable are encrypted using a key derived from your password. This means:</p>
+  <ul>
+    <li>Even if our servers were ever compromised, your data would be unreadable without your password.</li>
+    <li>We cannot read your data. It is encrypted before it leaves your device.</li>
+    <li>If you forget your password and there is no recovery mechanism, your data cannot be recovered by anyone - including us.</li>
+  </ul>
+  <p>Recovery keys exist to prevent permanent data loss in the event that you forget your password, while maintaining the security of your data at rest.</p>
+
+  <h2>2. What is a recovery key?</h2>
+  <p>When you first log in to QUsable, a recovery key is generated. This key is a long, randomly generated string that can be used in place of your password to decrypt your data.</p>
+  <p>Your recovery key is shown to you <strong>once only</strong> - immediately after your first login. You are responsible for saving it securely. We recommend:</p>
+  <ul>
+    <li>Writing it down and storing it in a secure physical location.</li>
+    <li>Saving it in a trusted password manager.</li>
+    <li>Storing it in a secure encrypted file on a separate device.</li>
+  </ul>
+
+  <div class="warning">
+    <p><strong>Important:</strong> If you lose both your password and your recovery key, your data cannot be recovered. There is no way for us or anyone else to decrypt your records without one of these two items.</p>
+  </div>
+
+  <h2>3. How recovery keys are stored</h2>
+  <p>An encrypted copy of your recovery key is stored on our servers. It is encrypted using a server-side master key that we control. This copy exists solely to allow you to initiate an account recovery request.</p>
+  <p>This server-side copy cannot decrypt your data on its own. It is only used during a verified recovery process to confirm that you are the legitimate account owner.</p>
+
+  <h2>4. When can a recovery key be used?</h2>
+  <p>A recovery key can be used to access your account and decrypt your data under the following circumstances:</p>
+  <ul>
+    <li>You have forgotten your password and cannot log in.</li>
+    <li>You have lost access to your account for another reason.</li>
+  </ul>
+  <p>Recovery keys <strong>cannot</strong> be used by third parties, support staff, or us to access your data without your explicit request and identity verification (see section 6 below).</p>
+
+  <h2>5. What a recovery key does and does not allow</h2>
+
+  <h3>A recovery key allows you to:</h3>
+  <ul>
+    <li>Log in to your account when you have forgotten your password.</li>
+    <li>Access and export your encrypted learner records.</li>
+    <li>Set a new password and continue using the service.</li>
+  </ul>
+
+  <h3>A recovery key does not allow:</h3>
+  <ul>
+    <li>Access by QUsable staff without your request and verification (see below).</li>
+    <li>Access by Supabase, Netlify, Stripe, or any other third party.</li>
+    <li>Bypassing your encrypted data if the recovery key has been lost.</li>
+  </ul>
+
+  <h2>6. Requesting account recovery</h2>
+  <p>If you have forgotten your password but still have your recovery key, contact us at <a href="mailto:support@qusable.com">support@qusable.com</a> with the subject line "Account Recovery Request".</p>
+  <p>We will:</p>
+  <ul>
+    <li>Verify your identity by confirming details associated with your account (registered email address, account creation date, and subscription details).</li>
+    <li>Only proceed once we are reasonably satisfied you are the legitimate account holder.</li>
+    <li>Guide you through the recovery process using your recovery key.</li>
+  </ul>
+
+  <div class="callout">
+    <p><strong>Note:</strong> We will never initiate contact asking for your recovery key. If you receive an unsolicited request for your recovery key, do not respond - it is a phishing attempt.</p>
+  </div>
+
+  <h2>7. What happens if you lose your recovery key</h2>
+  <p>If you forget your password and have also lost your recovery key:</p>
+  <ul>
+    <li>We cannot recover your data. The encryption cannot be reversed without either your password or your recovery key.</li>
+    <li>You may create a new account and start fresh.</li>
+    <li>Any data held in cloud sync under the original account will eventually be deleted in line with our retention policy (12 months after account inactivity).</li>
+  </ul>
+  <p>We strongly recommend treating your recovery key with the same care as an important document. Do not store it in the same place as your password.</p>
+
+  <h2>8. Rotating your recovery key</h2>
+  <p>If you believe your recovery key has been compromised, contact us at <a href="mailto:support@qusable.com">support@qusable.com</a> immediately. We will assist you in rotating your key after identity verification.</p>
+
+  <h2>9. Our access to your data</h2>
+  <p>We do not have routine access to your decrypted data. The server-side encrypted copy of your recovery key is a last-resort measure only. It is subject to our standard security controls and is never shared with third parties.</p>
+  <p>We will only use the server-side recovery key copy:</p>
+  <ul>
+    <li>At your direct request, following identity verification, and only in the context of an account recovery process.</li>
+    <li>As required by law (e.g., a valid court order or regulatory requirement).</li>
+  </ul>
+  <p>We will notify you if we are required by law to access or disclose your data, unless we are legally prohibited from doing so.</p>
+
+  <h2>10. Changes to this policy</h2>
+  <p>We may update this policy from time to time. Material changes will be communicated to assessors by email. The current version is always available at <a href="https://qusable.com/recovery-key-policy.html">qusable.com/recovery-key-policy.html</a>.</p>
+
+  <h2>11. Contact</h2>
+  <p>For questions about your recovery key or account security:<br />
+  <a href="mailto:support@qusable.com">support@qusable.com</a></p>
+
+</body>
+</html>

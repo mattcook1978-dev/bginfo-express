@@ -3,16 +3,28 @@ import { supabase } from '../lib/supabase'
 
 export type SubscriptionStatus = 'loading' | 'none' | 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid'
 
+const MONTHLY_LIMIT = 15
+
+function getMonthlyResetDate(): string {
+  const now = new Date()
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString()
+}
+
 interface SubscriptionState {
   status: SubscriptionStatus
   currentPeriodEnd: string | null
   trialEnd: string | null
   cancelAtPeriodEnd: boolean
+  monthlyCount: number
 }
 
 interface SubscriptionContextValue extends SubscriptionState {
   isActive: boolean
+  atMonthlyLimit: boolean
+  monthlyLimit: number
+  monthlyResetDate: string
   refresh: () => Promise<void>
+  incrementMonthlyCount: () => void
 }
 
 const SubscriptionContext = createContext<SubscriptionContextValue | null>(null)
@@ -23,12 +35,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     currentPeriodEnd: null,
     trialEnd: null,
     cancelAtPeriodEnd: false,
+    monthlyCount: 0,
   })
 
   const refresh = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
-      setState({ status: 'none', currentPeriodEnd: null, trialEnd: null, cancelAtPeriodEnd: false })
+      setState({ status: 'none', currentPeriodEnd: null, trialEnd: null, cancelAtPeriodEnd: false, monthlyCount: 0 })
       return
     }
 
@@ -38,20 +51,23 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       })
       if (!res.ok) throw new Error('Failed to fetch')
       const data = await res.json() as SubscriptionState
-      setState({ ...data, status: data.status as SubscriptionStatus })
+      setState({ ...data, status: data.status as SubscriptionStatus, monthlyCount: data.monthlyCount ?? 0 })
     } catch {
-      // If we can't reach the server, default to 'none' so the app doesn't hang
-      setState({ status: 'none', currentPeriodEnd: null, trialEnd: null, cancelAtPeriodEnd: false })
+      setState({ status: 'none', currentPeriodEnd: null, trialEnd: null, cancelAtPeriodEnd: false, monthlyCount: 0 })
     }
   }, [])
 
-  // Load on mount and when auth state changes
+  // Optimistically increment the local count after a learner is successfully added
+  const incrementMonthlyCount = useCallback(() => {
+    setState(prev => ({ ...prev, monthlyCount: prev.monthlyCount + 1 }))
+  }, [])
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         void refresh()
       } else {
-        setState({ status: 'none', currentPeriodEnd: null, trialEnd: null, cancelAtPeriodEnd: false })
+        setState({ status: 'none', currentPeriodEnd: null, trialEnd: null, cancelAtPeriodEnd: false, monthlyCount: 0 })
       }
     })
     void refresh()
@@ -59,9 +75,18 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [refresh])
 
   const isActive = state.status === 'active' || state.status === 'trialing'
+  const atMonthlyLimit = state.monthlyCount >= MONTHLY_LIMIT
 
   return (
-    <SubscriptionContext.Provider value={{ ...state, isActive, refresh }}>
+    <SubscriptionContext.Provider value={{
+      ...state,
+      isActive,
+      atMonthlyLimit,
+      monthlyLimit: MONTHLY_LIMIT,
+      monthlyResetDate: getMonthlyResetDate(),
+      refresh,
+      incrementMonthlyCount,
+    }}>
       {children}
     </SubscriptionContext.Provider>
   )

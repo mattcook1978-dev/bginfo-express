@@ -7,10 +7,17 @@ interface LearnersScreenProps {
   onBack: () => void
   onAddLearner: () => void
   addBlocked?: boolean
+  monthlyCount?: number
+  monthlyLimit?: number
+  monthlyResetDate?: string
   onSelectRecord: (record: ExpressLearnerRecord) => void
 }
 
-export default function LearnersScreen({ records, loading, onBack, onAddLearner, addBlocked, onSelectRecord }: LearnersScreenProps) {
+function formatResetDate(isoDate: string): string {
+  return new Date(isoDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
+}
+
+export default function LearnersScreen({ records, loading, onBack, onAddLearner, addBlocked, monthlyCount, monthlyLimit, monthlyResetDate, onSelectRecord }: LearnersScreenProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-t-4 border-yellow-400 border-b border-gray-200 px-4 py-4">
@@ -24,18 +31,35 @@ export default function LearnersScreen({ records, loading, onBack, onAddLearner,
           </button>
           <h1 className="font-bold text-gray-900 text-lg flex-1">Learners</h1>
           <button
-            onClick={onAddLearner}
+            onClick={addBlocked ? undefined : onAddLearner}
+            disabled={addBlocked}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               addBlocked
-                ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 : 'bg-yellow-400 hover:bg-yellow-500 text-gray-900'
             }`}
           >
             <UserPlus className="w-4 h-4" />
-            {addBlocked ? 'Limit reached' : 'Add'}
+            Add
           </button>
         </div>
       </div>
+
+      {addBlocked && monthlyResetDate && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-3">
+          <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-amber-800">
+              Monthly limit reached ({monthlyCount}/{monthlyLimit}). Resets {formatResetDate(monthlyResetDate)}.
+            </p>
+            <a
+              href="mailto:support@qusable.com?subject=Monthly learner limit"
+              className="text-sm font-medium text-amber-900 underline underline-offset-2 hover:text-amber-700"
+            >
+              Need more? Get in touch
+            </a>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-3xl mx-auto px-4 py-6">
         {loading ? (
