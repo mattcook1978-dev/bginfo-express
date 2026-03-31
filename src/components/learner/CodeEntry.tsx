@@ -28,7 +28,7 @@ function parseCode(normalizedCode: string): { qType: QuestionnaireType; variant:
 
 interface CodeEntryProps {
   onSuccess: () => void
-  onAssessorClick: () => void
+  onAssessorClick?: () => void
 }
 
 function variantLabel(variant: PackageVariant): string {
@@ -317,14 +317,16 @@ export default function CodeEntry({ onSuccess, onAssessorClick }: CodeEntryProps
         </div>
 
         {/* Assessor link */}
-        <div className="text-center mt-8">
-          <button
-            onClick={onAssessorClick}
-            className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            Assessor Area
-          </button>
-        </div>
+        {onAssessorClick && (
+          <div className="text-center mt-8">
+            <button
+              onClick={onAssessorClick}
+              className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Assessor Area
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

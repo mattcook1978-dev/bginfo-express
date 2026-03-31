@@ -16,6 +16,8 @@ import AuthScreen from './components/auth/AuthScreen'
 import RecoveryKeyModal from './components/auth/RecoveryKeyModal'
 import UnlockScreen from './components/auth/UnlockScreen'
 
+const isAssessorDomain = window.location.hostname === 'app.qusable.com'
+
 function AppInner() {
   const { user, encryptionKey, unlocking, loading: authLoading, pendingRecoveryKey, onRecoveryKeyConfirmed } = useAuth()
   const { restoreFromCloud, triggerUpload } = useSync()
@@ -35,6 +37,7 @@ function AppInner() {
     if (autoImportId) return 'assessor-home'
     const sub = new URLSearchParams(window.location.search).get('subscription')
     if (sub) return 'assessor-home'
+    if (isAssessorDomain) return 'assessor-home'
     return 'learner-code-entry'
   })
   const [currentSectionId, setCurrentSectionId] = useState<string | undefined>()
@@ -105,7 +108,7 @@ function AppInner() {
   if (view === 'assessor-home' && !user) {
     return (
       <AuthScreen
-        onBack={() => setView('learner-code-entry')}
+        onBack={isAssessorDomain ? undefined : () => setView('learner-code-entry')}
         onSuccess={() => setView('assessor-home')}
       />
     )
@@ -154,7 +157,7 @@ function AppInner() {
       return (
         <CodeEntry
           onSuccess={handleLoginSuccess}
-          onAssessorClick={() => setView('assessor-home')}
+          onAssessorClick={isAssessorDomain ? undefined : () => setView('assessor-home')}
         />
       )
 
