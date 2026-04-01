@@ -646,7 +646,7 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
       {!collapsed && (
         <div className="p-3 space-y-3" onClick={e => e.stopPropagation()}>
           {/* Direct questions */}
-          {(bs.questions.length > 0 || bs.subsections.length === 0) && (
+          {bs.questions.length > 0 && (
             <div className="space-y-2">
               {bs.subsections.length > 0 && (
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">General</p>
@@ -665,24 +665,8 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
                   ))}
                 </SortableContext>
               </DndContext>
-              <button
-                onClick={() => onChange({ ...bs, questions: [...bs.questions, newQuestion()] })}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg w-full transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add question
-              </button>
             </div>
           )}
-
-          {/* Add subsection */}
-          <button
-            onClick={() => onChange({ ...bs, subsections: [...bs.subsections, newSubsection()] })}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-dashed border-gray-300 rounded-lg w-full transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add subsection
-          </button>
 
           {/* Subsections */}
           {bs.subsections.map((sub, si) => (
@@ -695,6 +679,24 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
               onBeforeDelete={onBeforeDelete}
             />
           ))}
+
+          {/* Add subsection */}
+          <button
+            onClick={() => onChange({ ...bs, subsections: [...bs.subsections, newSubsection()] })}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-dashed border-gray-300 rounded-lg w-full transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add subsection
+          </button>
+
+          {/* Add question */}
+          <button
+            onClick={() => onChange({ ...bs, questions: [...bs.questions, newQuestion()] })}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg w-full transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add question
+          </button>
         </div>
       )}
     </div>
