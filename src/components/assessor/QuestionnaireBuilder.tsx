@@ -675,6 +675,15 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
             </div>
           )}
 
+          {/* Add subsection */}
+          <button
+            onClick={() => onChange({ ...bs, subsections: [...bs.subsections, newSubsection()] })}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-dashed border-gray-300 rounded-lg w-full transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add subsection
+          </button>
+
           {/* Subsections */}
           {bs.subsections.map((sub, si) => (
             <SubsectionBlock
@@ -686,15 +695,6 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
               onBeforeDelete={onBeforeDelete}
             />
           ))}
-
-          {/* Add subsection */}
-          <button
-            onClick={() => onChange({ ...bs, subsections: [...bs.subsections, newSubsection()] })}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-dashed border-gray-300 rounded-lg w-full transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add subsection
-          </button>
         </div>
       )}
     </div>
