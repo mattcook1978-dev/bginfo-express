@@ -46,6 +46,7 @@ export default async function handler(req: Request, _context: Context) {
     line_items: [{ price: priceId, quantity: 1 }],
     mode: 'subscription',
     allow_promotion_codes: true,
+    payment_method_collection: 'if_required',
     subscription_data: {
       trial_period_days: 30,
       metadata: { userId: user.id },
