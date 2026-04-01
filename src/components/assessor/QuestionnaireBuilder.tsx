@@ -248,12 +248,13 @@ interface QuestionEditorProps {
   q: BQuestion
   qId: string
   depth: number
+  tint: 'a' | 'b'
   onChange: (q: BQuestion) => void
   onDelete: () => void
   dragHandle?: React.ReactNode
 }
 
-function QuestionEditor({ q, qId, depth, onChange, onDelete, dragHandle }: QuestionEditorProps) {
+function QuestionEditor({ q, qId, depth, tint, onChange, onDelete, dragHandle }: QuestionEditorProps) {
   const [expanded, setExpanded] = useState(true)
   const [newOption, setNewOption] = useState('')
   const optionInputRef = useRef<HTMLInputElement>(null)
@@ -304,7 +305,7 @@ function QuestionEditor({ q, qId, depth, onChange, onDelete, dragHandle }: Quest
     onChange({ ...q, followUp: { ...q.followUp, questions: [...q.followUp.questions, newQuestion()] } })
   }
 
-  const bg = depth === 0 ? 'bg-white' : 'bg-gray-50'
+  const bg = tint === 'a' ? 'bg-white' : 'bg-sky-50'
 
   return (
     <div className={`${bg} border border-gray-200 rounded-lg`}>
@@ -425,6 +426,7 @@ function QuestionEditor({ q, qId, depth, onChange, onDelete, dragHandle }: Quest
                       q={fq}
                       qId={`${qId}.${fqi + 1}`}
                       depth={depth + 1}
+                      tint={tint}
                       onChange={updated => updateFollowUpQ(fqi, updated)}
                       onDelete={() => deleteFollowUpQ(fqi)}
                     />
@@ -472,12 +474,15 @@ function SortableQuestion({ q, sectionIdx, qIdx, onChange, onDelete }: SortableQ
     </button>
   )
 
+  const tint: 'a' | 'b' = qIdx % 2 === 0 ? 'a' : 'b'
+
   return (
     <div ref={setNodeRef} style={style}>
       <QuestionEditor
         q={q}
         qId={`${sectionIdx + 1}.${qIdx + 1}`}
         depth={0}
+        tint={tint}
         onChange={onChange}
         onDelete={onDelete}
         dragHandle={dragHandle}
@@ -580,12 +585,13 @@ interface FixedSectionProps {
   bs: BSection
   sectionIdx: number
   collapsed: boolean
+  allowSubsections: boolean
   onToggleCollapse: () => void
   onChange: (bs: BSection) => void
   onBeforeDelete: (label: string) => void
 }
 
-function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, onBeforeDelete }: FixedSectionProps) {
+function FixedSection({ bs, sectionIdx, collapsed, allowSubsections, onToggleCollapse, onChange, onBeforeDelete }: FixedSectionProps) {
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
   const directCount = bs.questions.filter(q => q.text.trim()).length
   const subCount = bs.subsections.reduce((acc, sub) => acc + sub.questions.filter(q => q.text.trim()).length, 0)
@@ -681,13 +687,15 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
           ))}
 
           {/* Add subsection */}
-          <button
-            onClick={() => onChange({ ...bs, subsections: [...bs.subsections, newSubsection()] })}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-dashed border-gray-300 rounded-lg w-full transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add subsection
-          </button>
+          {allowSubsections && (
+            <button
+              onClick={() => onChange({ ...bs, subsections: [...bs.subsections, newSubsection()] })}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-dashed border-gray-300 rounded-lg w-full transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add subsection
+            </button>
+          )}
 
           {/* Add question */}
           <button
@@ -705,42 +713,44 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
 
 // ── Preview mode ───────────────────────────────────────────────────────────────
 
-function PreviewQuestion({ q, qId, depth }: { q: BQuestion; qId: string; depth: number }) {
+function PreviewQuestion({ q, qId, depth, tint }: { q: BQuestion; qId: string; depth: number; tint: 'a' | 'b' }) {
+  const bg = tint === 'a' ? 'bg-white' : 'bg-sky-50'
   return (
-    <div className={depth > 0 ? 'pl-4 border-l-2 border-gray-300' : ''}>
-      <div className="py-1.5">
-        <div className="flex items-start gap-2">
-          <span className="text-xs font-mono text-gray-400 shrink-0 mt-0.5">{qId}</span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-900">
-              {q.text || <em className="text-gray-400">No question text</em>}
+    <div className={`${bg} rounded px-2 py-1.5 ${depth > 0 ? 'ml-4 border-l-2 border-sky-200' : ''}`}>
+      <div className="flex items-start gap-2">
+        <span className="text-xs font-mono text-gray-400 shrink-0 mt-0.5">{qId}</span>
+        <div className="flex-1 min-w-0">
+          {depth > 0 && (
+            <p className="text-xs text-gray-400 italic mb-0.5">
+              If <span className="text-gray-600 font-medium">{q.followUp?.trigger ?? ''}</span>:
             </p>
-            <span className={`inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full ${TYPE_PILL[q.type]}`}>
-              {TYPE_LABEL[q.type]}
-            </span>
-            {q.options.length > 0 && (
-              <div className="mt-1 flex flex-wrap gap-1">
-                {q.options.map((opt, i) => (
-                  <span key={i} className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">
-                    {opt}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
+          <p className="text-sm text-gray-900">
+            {q.text || <em className="text-gray-400">No question text</em>}
+          </p>
+          <span className={`inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full ${TYPE_PILL[q.type]}`}>
+            {TYPE_LABEL[q.type]}
+          </span>
+          {q.options.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {q.options.map((opt, i) => (
+                <span key={i} className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">
+                  {opt}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       {q.followUp && (
-        <div className="ml-6 mt-0.5 space-y-0.5">
-          <p className="text-xs text-gray-400 italic">
-            If <span className="text-gray-600 font-medium">{q.followUp.trigger}</span>:
-          </p>
+        <div className="mt-1 space-y-1">
           {q.followUp.questions.map((fq, fqi) => (
             <PreviewQuestion
               key={fq.uid}
               q={fq}
               qId={`${qId}.${fqi + 1}`}
               depth={depth + 1}
+              tint={tint}
             />
           ))}
         </div>
@@ -768,24 +778,26 @@ function PreviewView({ name, sections }: { name: string; sections: BSection[] })
               <h3 className="text-sm font-semibold text-gray-900 pb-1 border-b border-gray-200">
                 {bs.title}
               </h3>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {directQuestions.map(q => {
+                  const tint: 'a' | 'b' = qCounter % 2 === 0 ? 'a' : 'b'
                   qCounter++
-                  return <PreviewQuestion key={q.uid} q={q} qId={`${si + 1}.${qCounter}`} depth={0} />
+                  return <PreviewQuestion key={q.uid} q={q} qId={`${si + 1}.${qCounter}`} depth={0} tint={tint} />
                 })}
                 {bs.subsections.map(sub => {
                   const subQs = sub.questions.filter(q => q.text.trim())
                   if (subQs.length === 0) return null
                   return (
-                    <div key={sub.uid} className="mt-3 space-y-0.5">
+                    <div key={sub.uid} className="mt-3 space-y-1">
                       {sub.title && (
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
                           {sub.title}
                         </p>
                       )}
                       {subQs.map(q => {
+                        const tint: 'a' | 'b' = qCounter % 2 === 0 ? 'a' : 'b'
                         qCounter++
-                        return <PreviewQuestion key={q.uid} q={q} qId={`${si + 1}.${qCounter}`} depth={0} />
+                        return <PreviewQuestion key={q.uid} q={q} qId={`${si + 1}.${qCounter}`} depth={0} tint={tint} />
                       })}
                     </div>
                   )
@@ -804,6 +816,7 @@ function PreviewView({ name, sections }: { name: string; sections: BSection[] })
 interface QuestionnaireBuilderProps {
   onBack: () => void
   onSaved: (q: ImportedQuestionnaire) => void
+  allowSubsections?: boolean
   initialData?: {
     sections: BSection[]
     name?: string       // set when editing an existing questionnaire
@@ -812,7 +825,7 @@ interface QuestionnaireBuilderProps {
   }
 }
 
-export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: QuestionnaireBuilderProps) {
+export default function QuestionnaireBuilder({ onBack, onSaved, allowSubsections = true, initialData }: QuestionnaireBuilderProps) {
   const [name, setName] = useState(initialData?.name ?? '')
   const nameInputRef = useRef<HTMLInputElement>(null)
   const [sections, setSections] = useState<BSection[]>(makeFixedSections(initialData))
@@ -961,6 +974,7 @@ export default function QuestionnaireBuilder({ onBack, onSaved, initialData }: Q
                 bs={bs}
                 sectionIdx={si}
                 collapsed={!!sectionCollapsed[bs.uid]}
+                allowSubsections={allowSubsections}
                 onToggleCollapse={() =>
                   setSectionCollapsed(prev => ({ ...prev, [bs.uid]: !prev[bs.uid] }))
                 }
