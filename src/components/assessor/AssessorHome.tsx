@@ -117,7 +117,7 @@ export default function AssessorHome({ onSubscription, autoImportId }: AssessorH
           return
         }
         setAutoImportStatus('not-found')
-        setAutoImportMessage(res.status === 410 ? 'This link has expired.' : 'Responses not found — the link may have already been used.')
+        setAutoImportMessage(res.status === 410 ? 'This link has expired.' : 'Responses not found - the link may have already been used.')
         return
       }
       if (!res.ok) throw new Error('Fetch failed')
@@ -204,7 +204,7 @@ export default function AssessorHome({ onSubscription, autoImportId }: AssessorH
             {canUpdate ? ' If you continue, the existing responses will be replaced with this new submission.' : ''}
           </p>
           <p className="text-gray-600 text-sm mb-6">
-            Any key notes you've already generated won't be updated automatically — regenerate them from the learner record if needed.
+            Any key notes you've already generated won't be updated automatically - regenerate them from the learner record if needed.
           </p>
           <div className="flex flex-col gap-2">
             {canUpdate && (

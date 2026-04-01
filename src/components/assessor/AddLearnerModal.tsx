@@ -119,7 +119,7 @@ Access code: ${code}
 Link: ${url}
 
 A few things to know:
-• You can complete it over multiple sessions — you don't have to finish in one go.
+• You can complete it over multiple sessions - you don't have to finish in one go.
 • You must use the same device and browser each time you return. Your progress saves automatically.
 • Please don't clear your browser data on that device, as this will erase your progress.
 • Once you've finished all sections, you'll be prompted to send your completed questionnaire back to me.

@@ -124,7 +124,7 @@ export default function LearnerDetail({ record, onBack, onDeleted, onRecordUpdat
       updateRecord({ packages: updatedPackages, submitted: true })
       setPackageResponses(prev => ({ ...prev, [variant]: decrypted }))
     } catch {
-      setDecryptError('Could not import — check the file is the right one for this learner.')
+      setDecryptError('Could not import - check the file is the right one for this learner.')
     } finally {
       setImportingPackage(null)
     }
@@ -262,7 +262,7 @@ Access code: ${code}
 Link: ${window.location.origin}
 
 A few things to know:
-• You can complete it over multiple sessions — you don't have to finish in one go.
+• You can complete it over multiple sessions - you don't have to finish in one go.
 • You must use the same device and browser each time you return. Your progress saves automatically.
 • Please don't clear your browser data on that device, as this will erase your progress.
 • Once you've finished all sections, you'll be prompted to send your completed questionnaire back to me.
@@ -440,12 +440,12 @@ If you have any questions, please get in touch.`
                 <>
                   {!packageResponses.remainder && packageResponses.visual && (
                     <p className="text-amber-700 text-xs bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                      Only Visual responses imported — key notes will cover visual history only.
+                      Only Visual responses imported - key notes will cover visual history only.
                     </p>
                   )}
                   {packageResponses.remainder && !packageResponses.visual && packages.visual?.status !== undefined && (
                     <p className="text-amber-700 text-xs bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                      Only Background responses imported — key notes will not include visual history.
+                      Only Background responses imported - key notes will not include visual history.
                     </p>
                   )}
                   <div className="space-y-4">

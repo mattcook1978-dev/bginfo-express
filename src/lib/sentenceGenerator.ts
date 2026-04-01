@@ -1886,7 +1886,7 @@ const KEY_POINTS_BANK: Record<string, KPEntry> = {
     topic: 'complications during pregnancy, birth, or the neonatal period',
     yes: 'Complications during pregnancy, birth, or the neonatal period reported.',
     no:  'No complications during pregnancy, birth, or the neonatal period reported.',
-    prefer_not_to_say: 'Pregnancy, birth, and neonatal history — preferred not to say.',
+    prefer_not_to_say: 'Pregnancy, birth, and neonatal history - preferred not to say.',
   },
   '2.7.2': {
     topic: 'ongoing medical conditions or regular medication',
@@ -1897,7 +1897,7 @@ const KEY_POINTS_BANK: Record<string, KPEntry> = {
     topic: 'mental health difficulties',
     yes: 'Difficulties with mental health reported (e.g. anxiety, low mood).',
     no:  'No mental health difficulties reported.',
-    prefer_not_to_say: 'Mental health history — preferred not to say.',
+    prefer_not_to_say: 'Mental health history - preferred not to say.',
   },
   '2.7.3b': {
     topic: 'support received for mental health difficulties',
@@ -1908,8 +1908,8 @@ const KEY_POINTS_BANK: Record<string, KPEntry> = {
     topic: 'significant life events or adverse experiences affecting learning',
     yes: 'Significant life events or adverse experiences affecting learning or development reported.',
     no:  'No significant life events or adverse experiences affecting learning or development reported.',
-    not_sure: 'Significant life events or adverse experiences — uncertain.',
-    prefer_not_to_say: 'Significant life events or adverse experiences — preferred not to say.',
+    not_sure: 'Significant life events or adverse experiences - uncertain.',
+    prefer_not_to_say: 'Significant life events or adverse experiences - preferred not to say.',
   },
 
   // ── 3. Family History ────────────────────────────────────────────────────────
@@ -1918,19 +1918,19 @@ const KEY_POINTS_BANK: Record<string, KPEntry> = {
     topic: 'family history of reading, writing or spelling difficulties',
     yes: 'Family history of reading, writing or spelling difficulties reported.',
     no:  'No family history of reading, writing or spelling difficulties.',
-    not_sure: 'Family history of reading, writing or spelling difficulties — uncertain.',
+    not_sure: 'Family history of reading, writing or spelling difficulties - uncertain.',
   },
   '3.2': {
     topic: 'family history of difficulties with mathematics or numbers',
     yes: 'Family history of difficulties with mathematics or numbers reported.',
     no:  'No family history of difficulties with mathematics or numbers.',
-    not_sure: 'Family history of mathematics difficulties — uncertain.',
+    not_sure: 'Family history of mathematics difficulties - uncertain.',
   },
   '3.3': {
     topic: 'family history of a specific learning difficulty or developmental condition',
     yes: 'Family member(s) with a diagnosis of a specific learning difficulty or developmental condition reported.',
     no:  'No family history of a specific learning difficulty or developmental condition.',
-    not_sure: 'Family history of SpLD or developmental diagnosis — uncertain.',
+    not_sure: 'Family history of SpLD or developmental diagnosis - uncertain.',
   },
 
   // ── 4. Linguistic History ────────────────────────────────────────────────────
@@ -1944,7 +1944,7 @@ const KEY_POINTS_BANK: Record<string, KPEntry> = {
     topic: 'literacy or numeracy difficulties in the first language',
     yes: 'Difficulties with reading, writing, spelling or maths reported in the first language.',
     no:  'No difficulties with reading, writing, spelling or maths in the first language.',
-    not_sure: 'Literacy or numeracy difficulties in first language — uncertain.',
+    not_sure: 'Literacy or numeracy difficulties in first language - uncertain.',
   },
 
   // ── 5. Educational History (shared IDs) ─────────────────────────────────────
@@ -2262,9 +2262,9 @@ export function generateKeyPoints(
       else if (v === 'no')
         result.push(entry?.no ?? `No ${entry?.topic ?? ''}.`)
       else if (v === 'not_sure')
-        result.push(entry?.not_sure ?? `${topicCap} — uncertain.`)
+        result.push(entry?.not_sure ?? `${topicCap} - uncertain.`)
       else if (v === 'prefer_not_to_say')
-        result.push(entry?.prefer_not_to_say ?? `${topicCap} — preferred not to say.`)
+        result.push(entry?.prefer_not_to_say ?? `${topicCap} - preferred not to say.`)
     }
 
     // Follow-ups — only when their trigger condition was met

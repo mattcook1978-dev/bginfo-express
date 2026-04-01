@@ -15,7 +15,7 @@ interface SubscriptionPageProps {
 export default function SubscriptionPage({ onBack, gated }: SubscriptionPageProps) {
   const { status, currentPeriodEnd, trialEnd, cancelAtPeriodEnd, refresh } = useSubscription()
   const { signOut } = useAuth()
-  const [interval, setInterval] = useState<'monthly' | 'yearly'>('yearly')
+  const [interval, setInterval] = useState<'monthly' | 'yearly'>('monthly')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -75,7 +75,7 @@ export default function SubscriptionPage({ onBack, gated }: SubscriptionPageProp
         <div className="max-w-lg mx-auto px-4 pt-6">
           <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
             {status === 'canceled' || status === 'none'
-              ? 'A subscription is required to access the Assessor Area. Your data is safe — subscribe or start a free trial to continue.'
+              ? 'A subscription is required to access the Assessor Area. Your data is safe - subscribe or start a free trial to continue.'
               : 'Your payment has failed and your grace period has ended. Please resubscribe to regain access.'}
           </div>
         </div>
@@ -90,10 +90,10 @@ export default function SubscriptionPage({ onBack, gated }: SubscriptionPageProp
         {isActive && (
           <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-800">
             {status === 'trialing' && trialEnd
-              ? `Free trial active — ends ${formatDate(trialEnd)}`
+              ? `Free trial active - ends ${formatDate(trialEnd)}`
               : cancelAtPeriodEnd
               ? `Subscription ends ${formatDate(currentPeriodEnd)}`
-              : `Active — renews ${formatDate(currentPeriodEnd)}`}
+              : `Active - renews ${formatDate(currentPeriodEnd)}`}
           </div>
         )}
 
@@ -143,7 +143,7 @@ export default function SubscriptionPage({ onBack, gated }: SubscriptionPageProp
                 {interval === 'yearly' && (
                   <p className="text-sm text-gray-500 mt-1">That's £4.17/month</p>
                 )}
-                <p className="text-sm text-green-700 font-medium mt-2">30-day free trial — no card charged until then</p>
+                <p className="text-sm text-green-700 font-medium mt-2">30-day free trial - no card charged until then</p>
               </div>
 
               <ul className="space-y-2.5">

@@ -311,7 +311,7 @@ export default function QuestionnaireImport({ onBack, onReadyForBuilder }: Props
 
       if (!res.ok || !res.body) {
         const bodyText = await res.text().catch(() => '')
-        let errMsg = `Analysis failed (${res.status}) — please try again.`
+        let errMsg = `Analysis failed (${res.status}) - please try again.`
         try { errMsg = (JSON.parse(bodyText) as { error?: string }).error ?? errMsg } catch { /* ignore */ }
         setError(errMsg)
         setStage('error')
@@ -346,7 +346,7 @@ export default function QuestionnaireImport({ onBack, onReadyForBuilder }: Props
 
     for (let i = 0; i < nonEmpty.length; i++) {
       const section = nonEmpty[i]
-      setLoadingStatus(`Determining question types — section ${i + 1} of ${nonEmpty.length}…`)
+      setLoadingStatus(`Determining question types - section ${i + 1} of ${nonEmpty.length}…`)
 
       const toClassify = flattenForClassify(section.questions)
       const BATCH = 30
@@ -436,7 +436,7 @@ export default function QuestionnaireImport({ onBack, onReadyForBuilder }: Props
               />
               <p className={`text-xs ${charOverLimit ? 'text-amber-600' : 'text-gray-400'}`}>
                 {charCount.toLocaleString()} characters
-                {charOverLimit && ' — this document is quite long. If analysis fails, try splitting it into sections and importing separately.'}
+                {charOverLimit && ' - this document is quite long. If analysis fails, try splitting it into sections and importing separately.'}
               </p>
             </div>
 
