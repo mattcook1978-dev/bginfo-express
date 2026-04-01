@@ -91,7 +91,7 @@ const TYPE_PILL: Record<QuestionType, string> = {
   yes_no_notsure: 'bg-emerald-500/20 text-emerald-400',
   yes_no_prefernot: 'bg-emerald-500/20 text-emerald-400',
   yes_no_notsure_prefernot: 'bg-emerald-500/20 text-emerald-400',
-  single_choice: 'bg-sky-500/20 text-sky-400',
+  single_choice: 'bg-sky-1000/20 text-sky-400',
   multi_choice: 'bg-violet-500/20 text-violet-400',
   free_text: 'bg-amber-500/20 text-amber-400',
 }
@@ -305,7 +305,7 @@ function QuestionEditor({ q, qId, depth, tint, onChange, onDelete, dragHandle }:
     onChange({ ...q, followUp: { ...q.followUp, questions: [...q.followUp.questions, newQuestion()] } })
   }
 
-  const bg = tint === 'a' ? 'bg-white' : 'bg-sky-50'
+  const bg = tint === 'a' ? 'bg-white' : 'bg-sky-100'
 
   return (
     <div className={`${bg} border border-gray-200 rounded-lg`}>
@@ -714,9 +714,9 @@ function FixedSection({ bs, sectionIdx, collapsed, allowSubsections, onToggleCol
 // ── Preview mode ───────────────────────────────────────────────────────────────
 
 function PreviewQuestion({ q, qId, depth, tint }: { q: BQuestion; qId: string; depth: number; tint: 'a' | 'b' }) {
-  const bg = tint === 'a' ? 'bg-white' : 'bg-sky-50'
+  const bg = tint === 'a' ? 'bg-white' : 'bg-sky-100'
   return (
-    <div className={`${bg} rounded px-2 py-1.5 ${depth > 0 ? 'ml-4 border-l-2 border-sky-200' : ''}`}>
+    <div className={`${bg} rounded px-2 py-1.5 ${depth > 0 ? 'ml-4 border-l-2 border-sky-300' : ''}`}>
       <div className="flex items-start gap-2">
         <span className="text-xs font-mono text-gray-400 shrink-0 mt-0.5">{qId}</span>
         <div className="flex-1 min-w-0">
