@@ -11,7 +11,7 @@ import {
   ChevronLeft, Plus, Trash2, GripVertical, X, ChevronDown, ChevronRight,
   Save, Undo2, Eye, EyeOff, ChevronsUpDown,
 } from 'lucide-react'
-import type { ImportedQuestionnaire, QuestionType, Section, Question } from '../../types'
+import type { ImportedQuestionnaire, QuestionType, Section, Subsection, Question } from '../../types'
 import { saveImportedQuestionnaire } from '../../lib/storage'
 import { publishQuestionnaire } from '../../lib/fetchQuestionnaire'
 
@@ -30,10 +30,17 @@ export interface BQuestion {
   followUp: BFollowUp | null
 }
 
+export interface BSubsection {
+  uid: string
+  title: string
+  questions: BQuestion[]
+}
+
 export interface BSection {
   uid: string
   title: string
   questions: BQuestion[]
+  subsections: BSubsection[]
   reportSectionId?: string
 }
 
@@ -116,6 +123,10 @@ function newQuestion(): BQuestion {
   return { uid: uid(), text: '', type: 'yes_no', options: [], followUp: null }
 }
 
+function newSubsection(title = ''): BSubsection {
+  return { uid: uid(), title, questions: [newQuestion()] }
+}
+
 // ── Initialise 6 fixed sections, optionally pre-populated from initialData ─────
 
 function makeFixedSections(initialData?: { sections: BSection[] }): BSection[] {
@@ -126,11 +137,13 @@ function makeFixedSections(initialData?: { sections: BSection[] }): BSection[] {
       (!s.reportSectionId && rs.value === 'bg-further')
     ) ?? []
     const questions = matching.flatMap(s => s.questions)
+    const subsections = matching.flatMap(s => s.subsections ?? [])
     return {
-      uid: rs.value, // stable — used as collapse key and DnD context
+      uid: rs.value,
       title: rs.label,
       reportSectionId: rs.value,
       questions,
+      subsections,
     }
   })
 }
@@ -158,6 +171,11 @@ export function importedQuestionnaireToBuilderSections(iq: ImportedQuestionnaire
     title: s.title,
     reportSectionId: s.reportSectionId,
     questions: (s.questions ?? []).map(questionToBQuestion),
+    subsections: (s.subsections ?? []).map(sub => ({
+      uid: uid(),
+      title: sub.title,
+      questions: sub.questions.map(questionToBQuestion),
+    })),
   }))
 }
 
@@ -189,13 +207,27 @@ function buildOutput(
   const keyPointsBank: Record<string, never> = {}
   let sectionCounter = 0
   const outSections: Section[] = sections
-    .filter(bs => bs.questions.some(q => q.text.trim()))
+    .filter(bs =>
+      bs.questions.some(q => q.text.trim()) ||
+      bs.subsections.some(sub => sub.questions.some(q => q.text.trim()))
+    )
     .map(bs => {
       sectionCounter++
+      let qCounter = 0
       const questions = bs.questions
         .filter(q => q.text.trim())
-        .map((bq, qi) => convertQuestion(bq, `${sectionCounter}.${qi + 1}`))
+        .map(bq => convertQuestion(bq, `${sectionCounter}.${++qCounter}`))
+      const subsections: Subsection[] = bs.subsections
+        .filter(sub => sub.questions.some(q => q.text.trim()))
+        .map((sub, subi) => ({
+          id: `section-${sectionCounter}-sub-${subi + 1}`,
+          title: sub.title,
+          questions: sub.questions
+            .filter(q => q.text.trim())
+            .map(bq => convertQuestion(bq, `${sectionCounter}.${++qCounter}`)),
+        }))
       const section: Section = { id: `section-${sectionCounter}`, title: bs.title, questions }
+      if (subsections.length > 0) section.subsections = subsections
       if (bs.reportSectionId) section.reportSectionId = bs.reportSectionId
       return section
     })
@@ -454,6 +486,94 @@ function SortableQuestion({ q, sectionIdx, qIdx, onChange, onDelete }: SortableQ
   )
 }
 
+// ── Subsection block ──────────────────────────────────────────────────────────
+
+interface SubsectionBlockProps {
+  sub: BSubsection
+  sectionIdx: number
+  onChange: (sub: BSubsection) => void
+  onDelete: () => void
+  onBeforeDelete: (label: string) => void
+}
+
+function SubsectionBlock({ sub, sectionIdx, onChange, onDelete, onBeforeDelete }: SubsectionBlockProps) {
+  const [collapsed, setCollapsed] = useState(false)
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
+  const questionCount = sub.questions.filter(q => q.text.trim()).length
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIdx = sub.questions.findIndex(q => q.uid === active.id)
+    const newIdx = sub.questions.findIndex(q => q.uid === over.id)
+    if (oldIdx < 0 || newIdx < 0) return
+    onChange({ ...sub, questions: arrayMove(sub.questions, oldIdx, newIdx) })
+  }
+
+  function updateQuestion(idx: number, q: BQuestion) {
+    const updated = [...sub.questions]
+    updated[idx] = q
+    onChange({ ...sub, questions: updated })
+  }
+
+  function deleteQuestion(idx: number) {
+    const q = sub.questions[idx]
+    const label = q.text.trim()
+      ? `"${q.text.trim().slice(0, 40)}${q.text.length > 40 ? '…' : ''}"`
+      : `question ${sectionIdx + 1}.${idx + 1}`
+    onBeforeDelete(label)
+    onChange({ ...sub, questions: sub.questions.filter((_, i) => i !== idx) })
+  }
+
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden ml-2">
+      <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-200">
+        <button onClick={() => setCollapsed(c => !c)} className="text-gray-400 hover:text-gray-600 shrink-0">
+          {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        </button>
+        <input
+          value={sub.title}
+          onChange={e => onChange({ ...sub, title: e.target.value })}
+          placeholder="Subsection title…"
+          className="flex-1 bg-transparent text-sm font-medium text-gray-700 focus:outline-none border-b border-transparent focus:border-gray-400 placeholder-gray-400"
+        />
+        {questionCount > 0 && (
+          <span className="text-xs text-gray-500 shrink-0">{questionCount}q</span>
+        )}
+        <button onClick={onDelete} className="text-gray-400 hover:text-red-500 shrink-0" title="Delete subsection">
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {!collapsed && (
+        <div className="p-2 space-y-2">
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={sub.questions.map(q => q.uid)} strategy={verticalListSortingStrategy}>
+              {sub.questions.map((q, qi) => (
+                <SortableQuestion
+                  key={q.uid}
+                  q={q}
+                  sectionIdx={sectionIdx}
+                  qIdx={qi}
+                  onChange={updated => updateQuestion(qi, updated)}
+                  onDelete={() => deleteQuestion(qi)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+          <button
+            onClick={() => onChange({ ...sub, questions: [...sub.questions, newQuestion()] })}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg w-full transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add question
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Fixed section (title fixed to report heading, questions drag/droppable) ────
 
 interface FixedSectionProps {
@@ -467,7 +587,9 @@ interface FixedSectionProps {
 
 function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, onBeforeDelete }: FixedSectionProps) {
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
-  const questionCount = bs.questions.filter(q => q.text.trim()).length
+  const directCount = bs.questions.filter(q => q.text.trim()).length
+  const subCount = bs.subsections.reduce((acc, sub) => acc + sub.questions.filter(q => q.text.trim()).length, 0)
+  const questionCount = directCount + subCount
 
   function handleQuestionDragEnd(event: DragEndEvent) {
     const { active, over } = event
@@ -493,6 +615,16 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
     onChange({ ...bs, questions: bs.questions.filter((_, i) => i !== idx) })
   }
 
+  function updateSubsection(idx: number, sub: BSubsection) {
+    const updated = [...bs.subsections]
+    updated[idx] = sub
+    onChange({ ...bs, subsections: updated })
+  }
+
+  function deleteSubsection(idx: number) {
+    onChange({ ...bs, subsections: bs.subsections.filter((_, i) => i !== idx) })
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
       {/* Section header */}
@@ -511,30 +643,57 @@ function FixedSection({ bs, sectionIdx, collapsed, onToggleCollapse, onChange, o
         )}
       </div>
 
-      {/* Questions */}
       {!collapsed && (
-        <div className="p-3 space-y-2" onClick={e => e.stopPropagation()}>
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleQuestionDragEnd}>
-            <SortableContext items={bs.questions.map(q => q.uid)} strategy={verticalListSortingStrategy}>
-              {bs.questions.map((q, qi) => (
-                <SortableQuestion
-                  key={q.uid}
-                  q={q}
-                  sectionIdx={sectionIdx}
-                  qIdx={qi}
-                  onChange={updated => updateQuestion(qi, updated)}
-                  onDelete={() => deleteQuestion(qi)}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
+        <div className="p-3 space-y-3" onClick={e => e.stopPropagation()}>
+          {/* Direct questions */}
+          {(bs.questions.length > 0 || bs.subsections.length === 0) && (
+            <div className="space-y-2">
+              {bs.subsections.length > 0 && (
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">General</p>
+              )}
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleQuestionDragEnd}>
+                <SortableContext items={bs.questions.map(q => q.uid)} strategy={verticalListSortingStrategy}>
+                  {bs.questions.map((q, qi) => (
+                    <SortableQuestion
+                      key={q.uid}
+                      q={q}
+                      sectionIdx={sectionIdx}
+                      qIdx={qi}
+                      onChange={updated => updateQuestion(qi, updated)}
+                      onDelete={() => deleteQuestion(qi)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+              <button
+                onClick={() => onChange({ ...bs, questions: [...bs.questions, newQuestion()] })}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg w-full transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add question
+              </button>
+            </div>
+          )}
 
+          {/* Subsections */}
+          {bs.subsections.map((sub, si) => (
+            <SubsectionBlock
+              key={sub.uid}
+              sub={sub}
+              sectionIdx={sectionIdx}
+              onChange={updated => updateSubsection(si, updated)}
+              onDelete={() => deleteSubsection(si)}
+              onBeforeDelete={onBeforeDelete}
+            />
+          ))}
+
+          {/* Add subsection */}
           <button
-            onClick={() => onChange({ ...bs, questions: [...bs.questions, newQuestion()] })}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg w-full transition-colors"
+            onClick={() => onChange({ ...bs, subsections: [...bs.subsections, newSubsection()] })}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-dashed border-gray-300 rounded-lg w-full transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
-            Add question
+            Add subsection
           </button>
         </div>
       )}
@@ -589,27 +748,50 @@ function PreviewQuestion({ q, qId, depth }: { q: BQuestion; qId: string; depth: 
 }
 
 function PreviewView({ name, sections }: { name: string; sections: BSection[] }) {
-  const populated = sections.filter(s => s.questions.some(q => q.text.trim()))
+  const populated = sections.filter(s =>
+    s.questions.some(q => q.text.trim()) ||
+    s.subsections.some(sub => sub.questions.some(q => q.text.trim()))
+  )
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
       {name && <h2 className="text-lg font-semibold text-gray-900">{name}</h2>}
       {populated.length === 0 ? (
         <p className="text-sm text-gray-500 italic">No questions added yet.</p>
       ) : (
-        populated.map((bs, si) => (
-          <div key={bs.uid} className="space-y-1">
-            <h3 className="text-sm font-semibold text-gray-900 pb-1 border-b border-gray-200">
-              {bs.title}
-            </h3>
-            <div className="space-y-0.5">
-              {bs.questions
-                .filter(q => q.text.trim())
-                .map((q, qi) => (
-                  <PreviewQuestion key={q.uid} q={q} qId={`${si + 1}.${qi + 1}`} depth={0} />
-                ))}
+        populated.map((bs, si) => {
+          let qCounter = 0
+          const directQuestions = bs.questions.filter(q => q.text.trim())
+          return (
+            <div key={bs.uid} className="space-y-1">
+              <h3 className="text-sm font-semibold text-gray-900 pb-1 border-b border-gray-200">
+                {bs.title}
+              </h3>
+              <div className="space-y-0.5">
+                {directQuestions.map(q => {
+                  qCounter++
+                  return <PreviewQuestion key={q.uid} q={q} qId={`${si + 1}.${qCounter}`} depth={0} />
+                })}
+                {bs.subsections.map(sub => {
+                  const subQs = sub.questions.filter(q => q.text.trim())
+                  if (subQs.length === 0) return null
+                  return (
+                    <div key={sub.uid} className="mt-3 space-y-0.5">
+                      {sub.title && (
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                          {sub.title}
+                        </p>
+                      )}
+                      {subQs.map(q => {
+                        qCounter++
+                        return <PreviewQuestion key={q.uid} q={q} qId={`${si + 1}.${qCounter}`} depth={0} />
+                      })}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        ))
+          )
+        })
       )}
     </div>
   )

@@ -205,6 +205,7 @@ function toBSections(
     uid: crypto.randomUUID(),
     title: s.heading,
     questions: s.questions.map(toQ),
+    subsections: [],
     reportSectionId: s.headingId,
   }))
 }
