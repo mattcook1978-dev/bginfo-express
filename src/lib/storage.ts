@@ -1,5 +1,5 @@
 import { openDB, type IDBPDatabase } from 'idb'
-import type { LearnerSession, ExpressLearnerRecord, QuestionnaireType, ImportedQuestionnaire } from '../types'
+import type { LearnerSession, ExpressLearnerRecord, ImportedQuestionnaire } from '../types'
 
 const DB_NAME = 'bginfo-express'
 const DB_VERSION = 1
@@ -116,10 +116,4 @@ export async function loadAllImportedQuestionnaires(): Promise<ImportedQuestionn
 export async function deleteImportedQuestionnaire(id: string): Promise<void> {
   const db = await getDB()
   await db.delete('importedQuestionnaires', id)
-}
-
-// ── Compatibility shims (used by LearnerContext which expects these signatures) ──
-
-export async function loadCustomQuestionnaire(_type: QuestionnaireType): Promise<undefined> {
-  return undefined
 }

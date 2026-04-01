@@ -227,7 +227,7 @@ export async function downloadExpressDoc(
 ): Promise<void> {
   const paras: Paragraph[] = []
 
-  paras.push(coverTitle('BGInfo Express'))
+  paras.push(coverTitle('QUsable'))
   paras.push(coverSubtitle(learnerName))
   paras.push(divider())
 
@@ -241,7 +241,7 @@ export async function downloadExpressDoc(
 
   const doc = new Document({ styles: BASE_DOC_STYLES, sections: [{ children: paras }] })
   const safeName = learnerName.replace(/[^a-z0-9 ]/gi, '').trim() || 'learner'
-  await saveDocx(doc, `BGInfo Express - ${safeName}.docx`)
+  await saveDocx(doc, `QUsable - ${safeName}.docx`)
 }
 
 export async function downloadKeyNotesDoc(
@@ -250,7 +250,7 @@ export async function downloadKeyNotesDoc(
 ): Promise<void> {
   const paras: Paragraph[] = []
 
-  paras.push(coverTitle('BGInfo Express'))
+  paras.push(coverTitle('QUsable'))
   paras.push(coverSubtitle(learnerName))
   paras.push(divider())
   paras.push(sectionHeading('Background Information - Key Notes'))
@@ -258,7 +258,7 @@ export async function downloadKeyNotesDoc(
 
   const doc = new Document({ styles: BASE_DOC_STYLES, sections: [{ children: paras }] })
   const safeName = learnerName.replace(/[^a-z0-9 ]/gi, '').trim() || 'learner'
-  await saveDocx(doc, `BGInfo Express - ${safeName} - Key Notes.docx`)
+  await saveDocx(doc, `QUsable - ${safeName} - Key Notes.docx`)
 }
 
 export async function downloadResponsesDoc(
@@ -269,7 +269,7 @@ export async function downloadResponsesDoc(
 ): Promise<void> {
   const label = variant === 'visual' ? 'Visual Questionnaire' : 'Background Questionnaire'
   const paras: Paragraph[] = [
-    coverTitle('BGInfo Express'),
+    coverTitle('QUsable'),
     coverSubtitle(`${learnerName} - ${label}`),
     divider(),
     sectionHeading('Questionnaire Responses'),
@@ -280,7 +280,7 @@ export async function downloadResponsesDoc(
   const doc = new Document({ styles: BASE_DOC_STYLES, sections: [{ children: paras }] })
   const safeName = learnerName.replace(/[^a-z0-9 ]/gi, '').trim() || 'learner'
   const safeVariant = variant === 'visual' ? 'Visual' : 'Background'
-  await saveDocx(doc, `BGInfo Express - ${safeName} - ${safeVariant}.docx`)
+  await saveDocx(doc, `QUsable - ${safeName} - ${safeVariant}.docx`)
 }
 
 // ── Blank questionnaire export ───────────────────────────────────────────────
@@ -386,7 +386,7 @@ export async function downloadBlankQuestionnaireDoc(name: string, sections: Sect
 
 export async function exportLearnerDraft(questionnaire: Questionnaire, responses: Responses): Promise<void> {
   const paras: Paragraph[] = [
-    coverTitle('BGInfo Express - Draft'),
+    coverTitle('QUsable - Draft'),
     divider(),
     sectionHeading('Your Responses So Far'),
   ]
@@ -394,5 +394,5 @@ export async function exportLearnerDraft(questionnaire: Questionnaire, responses
     paras.push(...buildRSectionParagraphs(section, responses))
   }
   const doc = new Document({ styles: BASE_DOC_STYLES, sections: [{ children: paras }] })
-  await saveDocx(doc, 'BGInfo Express - draft.docx')
+  await saveDocx(doc, 'QUsable - draft.docx')
 }

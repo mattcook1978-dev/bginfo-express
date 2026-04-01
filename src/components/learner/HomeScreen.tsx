@@ -58,7 +58,7 @@ export default function HomeScreen({ sections, onSectionSelect }: HomeScreenProp
       const shareUrl = `${window.location.origin}/?import=${id}`
 
       if ('share' in navigator) {
-        await (navigator as Navigator).share({ url: shareUrl, title: 'BGInfo Responses' })
+        await (navigator as Navigator).share({ url: shareUrl, title: 'QUsable Responses' })
       } else {
         await (navigator as Navigator).clipboard.writeText(shareUrl)
         setLinkCopied(true)
@@ -83,7 +83,7 @@ export default function HomeScreen({ sections, onSectionSelect }: HomeScreenProp
             <BookOpen className="w-5 h-5 text-gray-900" />
           </div>
           <div>
-            <h1 className="font-bold text-gray-900 text-lg">BGInfo</h1>
+            <h1 className="font-bold text-gray-900 text-lg">QUsable</h1>
             <p className="text-xs text-gray-500">
               {saveStatus === 'saving' && 'Saving...'}
               {saveStatus === 'saved' && 'Saved'}

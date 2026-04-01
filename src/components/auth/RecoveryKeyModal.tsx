@@ -21,7 +21,7 @@ export default function RecoveryKeyModal({ recoveryKey, onConfirmed }: RecoveryK
     if (!win) return
     win.document.write(`
       <html><body style="font-family:Arial;padding:40px;">
-        <h2>BGInfo Express - Recovery Key</h2>
+        <h2>QUsable - Recovery Key</h2>
         <p>Keep this somewhere safe. If you ever forget your password and lose this key, your data cannot be recovered.</p>
         <p style="font-size:24px;font-weight:bold;letter-spacing:4px;margin:24px 0;">${recoveryKey}</p>
         <p style="color:#666;font-size:12px;">Printed: ${new Date().toLocaleDateString('en-GB')}</p>

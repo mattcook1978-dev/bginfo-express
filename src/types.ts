@@ -122,7 +122,7 @@ export interface ImportedQuestionnaire {
 export type AppView =
   | 'learner-code-entry'
   | 'learner-home'
-  | 'learner-section'
+
   | 'learner-questions'
   | 'assessor-home'
   | 'subscription'

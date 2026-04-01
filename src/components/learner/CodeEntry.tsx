@@ -212,7 +212,7 @@ export default function CodeEntry({ onSuccess, onAssessorClick }: CodeEntryProps
                 <BookOpen className="w-10 h-10 text-white" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-primary-700">BGInfo</h1>
+            <h1 className="text-4xl font-bold text-primary-700">QUsable</h1>
             <p className="text-gray-600 mt-2">Welcome back - select a questionnaire or enter a new code</p>
           </div>
 
