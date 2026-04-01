@@ -42,7 +42,7 @@ export default function RecoveryKeyModal({ recoveryKey, onConfirmed }: RecoveryK
           <div>
             <h2 className="font-bold text-gray-900 text-base">Save your recovery key</h2>
             <p className="text-gray-700 text-sm mt-1">
-              This key is your backup if you ever forget your password. We store an encrypted copy so we can retrieve it for you — but please keep this safe too.
+              This key is your backup if you ever forget your password. Store it somewhere safe - if you lose it, your data cannot be recovered.
             </p>
           </div>
         </div>
