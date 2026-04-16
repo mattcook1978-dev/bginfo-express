@@ -7,6 +7,8 @@ import { SubscriptionProvider, useSubscription } from './contexts/SubscriptionCo
 import { questionnaireUnder16 } from './data/questionnaire-under16'
 import { questionnaire16plus } from './data/questionnaire-16plus'
 import { questionnaireVisual } from './lib/questionnaire'
+import { fetchImportedQuestionnaire } from './lib/fetchQuestionnaire'
+import { saveImportedQuestionnaire } from './lib/storage'
 import CodeEntry from './components/learner/CodeEntry'
 import HomeScreen from './components/learner/HomeScreen'
 import QuestionFlow from './components/learner/QuestionFlow'
@@ -28,6 +30,12 @@ function AppInner() {
     if (id) window.history.replaceState({}, '', window.location.pathname)
     return id
   })
+  const [pendingQuestionnaireId] = useState<string | null>(() => {
+    const id = new URLSearchParams(window.location.search).get('questionnaire')
+    if (id) window.history.replaceState({}, '', window.location.pathname)
+    return id
+  })
+  const [questionnaireImportState, setQuestionnaireImportState] = useState<'idle' | 'importing' | 'success' | 'error'>('idle')
   const [subscriptionSuccess] = useState(() => {
     const result = new URLSearchParams(window.location.search).get('subscription')
     if (result) window.history.replaceState({}, '', window.location.pathname)
@@ -35,6 +43,7 @@ function AppInner() {
   })
   const [view, setView] = useState<AppView>(() => {
     if (autoImportId) return 'assessor-home'
+    if (new URLSearchParams(window.location.search).get('questionnaire')) return 'assessor-home'
     const sub = new URLSearchParams(window.location.search).get('subscription')
     if (sub) return 'assessor-home'
     if (isAssessorDomain) return 'assessor-home'
@@ -91,6 +100,18 @@ function AppInner() {
   useEffect(() => {
     if (subscriptionSuccess) void refreshSubscription()
   }, [subscriptionSuccess]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-import a questionnaire shared via ?questionnaire= link
+  useEffect(() => {
+    if (!pendingQuestionnaireId || !encryptionKey || restoring) return
+    setQuestionnaireImportState('importing')
+    fetchImportedQuestionnaire(pendingQuestionnaireId).then(async q => {
+      if (!q) { setQuestionnaireImportState('error'); return }
+      await saveImportedQuestionnaire(q)
+      triggerUpload()
+      setQuestionnaireImportState('success')
+    }).catch(() => setQuestionnaireImportState('error'))
+  }, [pendingQuestionnaireId, encryptionKey, restoring]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUnlocked = useCallback(() => {
     setView('assessor-home')
@@ -231,6 +252,18 @@ function AppInner() {
   return (
     <>
       {content}
+      {questionnaireImportState === 'success' && (
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-green-50 border border-green-200 rounded-xl px-4 py-3 shadow-lg z-50 flex items-center justify-between gap-3">
+          <p className="text-sm text-green-800 font-medium">Questionnaire added to your account.</p>
+          <button onClick={() => setQuestionnaireImportState('idle')} className="text-green-600 hover:text-green-800 shrink-0 text-xs">Dismiss</button>
+        </div>
+      )}
+      {questionnaireImportState === 'error' && (
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-red-50 border border-red-200 rounded-xl px-4 py-3 shadow-lg z-50 flex items-center justify-between gap-3">
+          <p className="text-sm text-red-800 font-medium">Could not import questionnaire. The link may have expired.</p>
+          <button onClick={() => setQuestionnaireImportState('idle')} className="text-red-600 hover:text-red-800 shrink-0 text-xs">Dismiss</button>
+        </div>
+      )}
       {showLeaveModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 space-y-4">

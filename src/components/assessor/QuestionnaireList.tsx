@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Plus, Upload, Globe, Pencil, Trash2, X } from 'lucide-react'
+import { ChevronLeft, Plus, Upload, Globe, Pencil, Trash2, X, Link, MessageSquare } from 'lucide-react'
 import type { ImportedQuestionnaire, Section } from '../../types'
 import { loadAllImportedQuestionnaires, deleteImportedQuestionnaire } from '../../lib/storage'
 import QuestionnaireBuilder, { importedQuestionnaireToBuilderSections } from './QuestionnaireBuilder'
 import QuestionnaireImport from './QuestionnaireImport'
 import QuestionnaireViewer from './QuestionnaireViewer'
+import RequestQuestionnaireModal from './RequestQuestionnaireModal'
 import { questionnaireVisual } from '../../lib/questionnaire'
 import { questionnaire16plus } from '../../data/questionnaire-16plus'
 import { questionnaireUnder16 } from '../../data/questionnaire-under16'
+import { useAuth } from '../../contexts/AuthContext'
+
+const ADMIN_EMAIL = 'mattcook1978@gmail.com'
 
 type View = 'list' | 'build' | 'import' | 'view'
 
@@ -43,11 +47,16 @@ function getBuiltInSections(key: 'under16' | '16plus' | 'visual'): Section[] {
 }
 
 export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
+  const { user } = useAuth()
+  const isAdmin = user?.email === ADMIN_EMAIL
   const [view, setView] = useState<View>('list')
   const [questionnaires, setQuestionnaires] = useState<ImportedQuestionnaire[]>([])
   const [builderInitialData, setBuilderInitialData] = useState<BuilderInitialData | null>(null)
+  const [builderAllowSubsections, setBuilderAllowSubsections] = useState(true)
   const [viewerData, setViewerData] = useState<ViewerData | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showRequestModal, setShowRequestModal] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   useEffect(() => {
     loadAllImportedQuestionnaires().then(setQuestionnaires)
@@ -56,6 +65,14 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
   const openViewer = (data: ViewerData) => {
     setViewerData(data)
     setView('view')
+  }
+
+  function handleCopyLink(id: string) {
+    const url = `https://app.qusable.com?questionnaire=${id}`
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(null), 2000)
+    })
   }
 
   const handleDuplicateAndEdit = (key: 'under16' | '16plus' | 'visual', label: string) => {
@@ -94,15 +111,17 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
   if (view === 'build') {
     return (
       <QuestionnaireBuilder
-        onBack={() => { setBuilderInitialData(null); setView('list') }}
+        onBack={() => { setBuilderInitialData(null); setBuilderAllowSubsections(true); setView('list') }}
         onSaved={q => {
           setQuestionnaires(prev => {
             const exists = prev.find(x => x.id === q.id)
             return exists ? prev.map(x => x.id === q.id ? q : x) : [...prev, q]
           })
           setBuilderInitialData(null)
+          setBuilderAllowSubsections(true)
           setView('list')
         }}
+        allowSubsections={builderAllowSubsections}
         initialData={builderInitialData ?? undefined}
       />
     )
@@ -114,6 +133,7 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
         onBack={() => setView('list')}
         onReadyForBuilder={sections => {
           setBuilderInitialData({ sections, name: '' })
+          setBuilderAllowSubsections(false)
           setView('build')
         }}
       />
@@ -203,6 +223,15 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
                     {new Date(q.createdAt).toLocaleDateString()} · {q.sections.length} section{q.sections.length !== 1 ? 's' : ''}
                   </div>
                 </div>
+                {isAdmin && q.publishedAt && (
+                  <button
+                    onClick={e => { e.stopPropagation(); handleCopyLink(q.id) }}
+                    className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-green-600 transition-colors shrink-0"
+                    title="Copy share link"
+                  >
+                    {copiedId === q.id ? <Globe className="w-4 h-4 text-green-600" /> : <Link className="w-4 h-4" />}
+                  </button>
+                )}
                 <button
                   onClick={e => {
                     e.stopPropagation()
@@ -271,9 +300,27 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
                   <p className="text-xs text-gray-500 mt-0.5">Import from an existing Word document</p>
                 </div>
               </button>
+              {!isAdmin && (
+                <button
+                  onClick={() => { setShowAddModal(false); setShowRequestModal(true) }}
+                  className="w-full flex items-center gap-4 px-4 py-4 bg-white border border-gray-200 hover:border-gray-900 hover:bg-gray-50 rounded-xl transition-all text-left"
+                >
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-5 h-5 text-gray-700" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Request</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Ask us to build one for you</p>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
         </div>
+      )}
+
+      {showRequestModal && (
+        <RequestQuestionnaireModal onClose={() => setShowRequestModal(false)} />
       )}
     </div>
   )
