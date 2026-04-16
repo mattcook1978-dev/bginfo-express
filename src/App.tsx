@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import type { AppView, Section } from './types'
 import { LearnerProvider, useLearner } from './contexts/LearnerContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
@@ -96,6 +96,32 @@ function AppInner() {
     setView('assessor-home')
   }, [])
 
+  // Intercept browser back button when assessor is logged in
+  const [showLeaveModal, setShowLeaveModal] = useState(false)
+  const leavingRef = useRef(false)
+
+  useEffect(() => {
+    if (!user || !encryptionKey) return
+    history.pushState({ qusable: true }, '')
+    function handlePopState() {
+      if (leavingRef.current) return
+      history.pushState({ qusable: true }, '')
+      setShowLeaveModal(true)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [user, encryptionKey])
+
+  function handleStay() {
+    setShowLeaveModal(false)
+  }
+
+  function handleLeave() {
+    leavingRef.current = true
+    setShowLeaveModal(false)
+    history.go(-2)
+  }
+
   // Show nothing while we check if the user is already logged in
   if (authLoading) return null
 
@@ -152,51 +178,83 @@ function AppInner() {
     }
   }
 
+  let content: React.ReactNode = null
   switch (view) {
     case 'learner-code-entry':
-      return (
+      content = (
         <CodeEntry
           onSuccess={handleLoginSuccess}
           onAssessorClick={isAssessorDomain ? undefined : () => setView('assessor-home')}
         />
       )
+      break
 
     case 'learner-home':
-      return (
+      content = (
         <HomeScreen
           sections={sections}
           onSectionSelect={handleSectionSelect}
         />
       )
+      break
 
     case 'learner-questions':
       if (!currentSection) {
         setView('learner-home')
-        return null
+        content = null
+      } else {
+        content = (
+          <QuestionFlow
+            questions={getFlowQuestions(currentSection)}
+            onBack={handleBackToHome}
+            title={currentSection.title}
+            questionnaire={questionnaire}
+          />
+        )
       }
-      return (
-        <QuestionFlow
-          questions={getFlowQuestions(currentSection)}
-          onBack={handleBackToHome}
-          title={currentSection.title}
-          questionnaire={questionnaire}
-        />
-      )
+      break
 
     case 'assessor-home':
-      return (
+      content = (
         <AssessorHome
           onSubscription={() => setView('subscription')}
           autoImportId={autoImportId ?? undefined}
         />
       )
+      break
 
     case 'subscription':
-      return <SubscriptionPage onBack={() => setView('assessor-home')} />
-
-    default:
-      return null
+      content = <SubscriptionPage onBack={() => setView('assessor-home')} />
+      break
   }
+
+  return (
+    <>
+      {content}
+      {showLeaveModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 space-y-4">
+            <h2 className="text-base font-semibold text-gray-900">Leaving this page will log you out</h2>
+            <p className="text-sm text-gray-600">Use the back button in the app to navigate — leaving the page will end your session and you'll need to log in again.</p>
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={handleStay}
+                className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+              >
+                Stay
+              </button>
+              <button
+                onClick={handleLeave}
+                className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                Log out and leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
 
 export default function App() {
