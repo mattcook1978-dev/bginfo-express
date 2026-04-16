@@ -96,7 +96,7 @@ export interface ExpressLearnerRecord {
 }
 
 export interface AssessorPreferences {
-  mainQuestionnaire: 'standard' | string  // 'standard' or a custom questionnaire ID
+  mainQuestionnaire: 'under16' | '16plus' | string | null  // null = none, 'under16'/'16plus' = standard, string = custom ID
   includeVisual: boolean
 }
 
