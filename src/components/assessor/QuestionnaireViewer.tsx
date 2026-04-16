@@ -14,10 +14,21 @@ interface QuestionnaireViewerProps {
 const TYPE_LABEL: Record<string, string> = {
   yes_no: 'Yes / No',
   yes_no_notsure: 'Yes / No / Not sure',
+  yes_no_prefernot: 'Yes / No / Prefer not to say',
   yes_no_notsure_prefernot: 'Yes / No / Not sure / Prefer not to say',
   single_choice: 'Single choice',
   multi_choice: 'Multiple choice',
   free_text: 'Free text',
+}
+
+const TYPE_PILL: Record<string, string> = {
+  yes_no: 'bg-emerald-500/20 text-emerald-400',
+  yes_no_notsure: 'bg-emerald-500/20 text-emerald-400',
+  yes_no_prefernot: 'bg-emerald-500/20 text-emerald-400',
+  yes_no_notsure_prefernot: 'bg-emerald-500/20 text-emerald-400',
+  single_choice: 'bg-sky-500/20 text-sky-400',
+  multi_choice: 'bg-violet-500/20 text-violet-400',
+  free_text: 'bg-amber-500/20 text-amber-400',
 }
 
 function ViewQuestion({ q, qId, depth }: { q: Question; qId: string; depth: number }) {
@@ -30,7 +41,7 @@ function ViewQuestion({ q, qId, depth }: { q: Question; qId: string; depth: numb
           <span className="text-xs font-mono text-gray-400 shrink-0 mt-0.5 min-w-[2.5rem] text-right pr-1">{qId}</span>
           <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-900">{q.text}</p>
-            <span className="inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
+            <span className={`inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full ${TYPE_PILL[q.type] ?? 'bg-gray-100 text-gray-500'}`}>
               {TYPE_LABEL[q.type] ?? q.type}
             </span>
             {(q.options?.length ?? 0) > 0 && (
