@@ -359,7 +359,7 @@ export default function AssessorHome({ onSubscription, autoImportId }: AssessorH
 
         {/* Factory reset */}
         <div className="border border-dashed border-red-200 rounded-xl p-4">
-          <p className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-3">Dev — Factory Reset</p>
+          <p className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-3">Dev - Factory Reset</p>
           {!showResetConfirm ? (
             <button
               onClick={() => setShowResetConfirm(true)}

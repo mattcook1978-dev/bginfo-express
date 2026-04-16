@@ -257,7 +257,7 @@ If you have any questions, please get in touch.`
                   mainChoice === 'under16' ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
                 }`}
               >
-                Background — Under 16
+                Background - Under 16
                 <div className="text-xs font-normal opacity-75 mt-0.5">Parent/Carer questionnaire</div>
               </button>
               <button
@@ -267,7 +267,7 @@ If you have any questions, please get in touch.`
                   mainChoice === '16plus' ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
                 }`}
               >
-                Background — 16 or over
+                Background - 16 or over
                 <div className="text-xs font-normal opacity-75 mt-0.5">Individual questionnaire</div>
               </button>
               {importedQuestionnaires.map(q => (

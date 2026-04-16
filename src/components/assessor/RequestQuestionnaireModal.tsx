@@ -74,7 +74,7 @@ export default function RequestQuestionnaireModal({ onClose }: RequestQuestionna
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Describe the questionnaire — e.g. sections you need, types of questions, any existing document you'd like us to base it on..."
+              placeholder="Describe the questionnaire - e.g. sections you need, types of questions, any existing document you'd like us to base it on..."
               rows={5}
               className="w-full border-2 border-gray-300 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-primary-500 transition-colors resize-none placeholder-gray-400"
             />

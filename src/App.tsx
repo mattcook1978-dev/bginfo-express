@@ -268,7 +268,7 @@ function AppInner() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 space-y-4">
             <h2 className="text-base font-semibold text-gray-900">Leaving this page will log you out</h2>
-            <p className="text-sm text-gray-600">Use the back button in the app to navigate — leaving the page will end your session and you'll need to log in again.</p>
+            <p className="text-sm text-gray-600">Use the back button in the app to navigate - leaving the page will end your session and you'll need to log in again.</p>
             <div className="flex gap-3 pt-1">
               <button
                 onClick={handleStay}
