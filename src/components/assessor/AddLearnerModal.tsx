@@ -43,7 +43,8 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
     ]).then(([qs, prefs]) => {
       setImportedQuestionnaires(qs)
       if (prefs) {
-        setMainQuestionnaire(prefs.mainQuestionnaire)
+        const mainIsValid = prefs.mainQuestionnaire === 'standard' || qs.some(q => q.id === prefs.mainQuestionnaire)
+        setMainQuestionnaire(mainIsValid ? prefs.mainQuestionnaire : 'standard')
         setIncludeVisual(prefs.includeVisual)
       }
     })
