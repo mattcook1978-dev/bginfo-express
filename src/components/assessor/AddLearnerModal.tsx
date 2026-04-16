@@ -27,14 +27,18 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
   const { incrementMonthlyCount } = useSubscription()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [qType, setQType] = useState<QuestionnaireType>('under16')
-  const [mainQuestionnaire, setMainQuestionnaire] = useState<'standard' | string>('standard')
-  const [includeVisual, setIncludeVisual] = useState(true)
+  // mainChoice: null = none, 'under16'/'16plus' = standard background, string = custom questionnaire ID
+  const [mainChoice, setMainChoice] = useState<null | 'under16' | '16plus' | string>(null)
+  const [includeVisual, setIncludeVisual] = useState(false)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [importedQuestionnaires, setImportedQuestionnaires] = useState<ImportedQuestionnaire[]>([])
   const [savedRecord, setSavedRecord] = useState<ExpressLearnerRecord | null>(null)
   const [copied, setCopied] = useState<'background' | 'visual' | null>(null)
+
+  // Derived values
+  const qType: QuestionnaireType = mainChoice === 'under16' ? 'under16' : '16plus'
+  const isCustom = mainChoice !== null && mainChoice !== 'under16' && mainChoice !== '16plus'
 
   useEffect(() => {
     Promise.all([
@@ -43,8 +47,10 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
     ]).then(([qs, prefs]) => {
       setImportedQuestionnaires(qs)
       if (prefs) {
-        const mainIsValid = prefs.mainQuestionnaire === 'standard' || qs.some(q => q.id === prefs.mainQuestionnaire)
-        setMainQuestionnaire(mainIsValid ? prefs.mainQuestionnaire : 'standard')
+        // Handle legacy 'standard' value from old format
+        const main = prefs.mainQuestionnaire === 'standard' ? null : prefs.mainQuestionnaire
+        const mainIsValid = main === null || main === 'under16' || main === '16plus' || qs.some(q => q.id === main)
+        setMainChoice(mainIsValid ? main : null)
         setIncludeVisual(prefs.includeVisual)
       }
     })
@@ -59,6 +65,7 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
 
   const handleSave = async () => {
     const e = validate()
+    if (mainChoice === null) e.questionnaire = 'Please choose a questionnaire'
     if (Object.keys(e).length > 0) { setErrors(e); return }
 
     setSaving(true)
@@ -81,7 +88,6 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
       }
 
       const fullName = `${firstName.trim()} ${lastName.trim()}`
-      const isCustom = mainQuestionnaire !== 'standard'
       const code = generateInternalCode(qType, isCustom ? 'custom' : 'remainder')
       const visualCode = includeVisual ? generateInternalCode(qType, 'visual') : undefined
 
@@ -97,22 +103,22 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
         lastName: lastName.trim(),
         code,
         questionnaireType: qType,
-        importedQuestionnaireId: isCustom ? mainQuestionnaire : undefined,
+        importedQuestionnaireId: isCustom ? mainChoice! : undefined,
         createdAt: new Date().toISOString(),
         submitted: false,
         packages,
       }
       await saveAssessorRecord(record)
-      if (isCustom) {
-        const selectedQ = importedQuestionnaires.find(q => q.id === mainQuestionnaire)
+      if (isCustom && mainChoice) {
+        const selectedQ = importedQuestionnaires.find(q => q.id === mainChoice)
         if (selectedQ?.publishedAt) {
           const codeHash = await hashCode(code)
-          await publishCodeMapping(codeHash, mainQuestionnaire)
+          await publishCodeMapping(codeHash, mainChoice)
         }
       }
 
       // Save preferences for next time
-      const prefs: AssessorPreferences = { mainQuestionnaire, includeVisual }
+      const prefs: AssessorPreferences = { mainQuestionnaire: mainChoice, includeVisual }
       await saveAssessorPreferences(prefs)
 
       incrementMonthlyCount()
@@ -241,55 +247,43 @@ If you have any questions, please get in touch.`
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Questionnaire Type</label>
-            <div className="grid grid-cols-2 gap-2">
-              {(['under16', '16plus'] as QuestionnaireType[]).map(t => (
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Questionnaires</label>
+            <p className="text-xs text-gray-500 mb-2">Choose the questionnaire(s) you want to send to this learner.</p>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setMainChoice('under16')}
+                className={`w-full py-3 px-4 rounded-xl border-2 font-medium transition-all text-sm text-left ${
+                  mainChoice === 'under16' ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
+                }`}
+              >
+                Background — Under 16
+                <div className="text-xs font-normal opacity-75 mt-0.5">Parent/Carer questionnaire</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMainChoice('16plus')}
+                className={`w-full py-3 px-4 rounded-xl border-2 font-medium transition-all text-sm text-left ${
+                  mainChoice === '16plus' ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
+                }`}
+              >
+                Background — 16 or over
+                <div className="text-xs font-normal opacity-75 mt-0.5">Individual questionnaire</div>
+              </button>
+              {importedQuestionnaires.map(q => (
                 <button
-                  key={t}
-                  onClick={() => setQType(t)}
-                  className={`py-3 px-4 rounded-xl border-2 font-medium transition-all text-sm ${
-                    qType === t ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
+                  key={q.id}
+                  type="button"
+                  onClick={() => setMainChoice(q.id)}
+                  className={`w-full py-3 px-4 rounded-xl border-2 font-medium transition-all text-sm text-left ${
+                    mainChoice === q.id ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
                   }`}
                 >
-                  {t === 'under16' ? 'Under 16' : '16 or over'}
-                  <div className="text-xs font-normal opacity-75 mt-0.5">{t === 'under16' ? 'Parent/Carer' : 'Individual'}</div>
+                  {q.name}
+                  {!q.publishedAt && <span className="text-xs font-normal opacity-75 ml-1">(not published)</span>}
+                  <div className="text-xs font-normal opacity-75 mt-0.5">Custom questionnaire</div>
                 </button>
               ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Questionnaires</label>
-            <div className="space-y-2">
-              {/* Main questionnaire */}
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => setMainQuestionnaire('standard')}
-                  className={`w-full py-3 px-4 rounded-xl border-2 font-medium transition-all text-sm text-left ${
-                    mainQuestionnaire === 'standard' ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
-                  }`}
-                >
-                  Background questionnaire
-                  <div className="text-xs font-normal opacity-75 mt-0.5">{qType === 'under16' ? 'Parent/Carer' : 'Individual'} — standard</div>
-                </button>
-                {importedQuestionnaires.map(q => (
-                  <button
-                    key={q.id}
-                    type="button"
-                    onClick={() => setMainQuestionnaire(q.id)}
-                    className={`w-full py-3 px-4 rounded-xl border-2 font-medium transition-all text-sm text-left ${
-                      mainQuestionnaire === q.id ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
-                    }`}
-                  >
-                    {q.name}
-                    {!q.publishedAt && <span className="text-xs font-normal opacity-75 ml-1">(not published)</span>}
-                    <div className="text-xs font-normal opacity-75 mt-0.5">Custom questionnaire</div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Visual toggle */}
               <button
                 type="button"
                 onClick={() => setIncludeVisual(v => !v)}
@@ -301,7 +295,8 @@ If you have any questions, please get in touch.`
                 <div className="text-xs font-normal opacity-75 mt-0.5">{includeVisual ? 'Included' : 'Not included'}</div>
               </button>
             </div>
-            {mainQuestionnaire !== 'standard' && !importedQuestionnaires.find(q => q.id === mainQuestionnaire)?.publishedAt && (
+            {errors.questionnaire && <p className="text-red-500 text-xs mt-1">{errors.questionnaire}</p>}
+            {isCustom && mainChoice && !importedQuestionnaires.find(q => q.id === mainChoice)?.publishedAt && (
               <p className="text-xs text-amber-600 mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                 This questionnaire has not been published yet. Publish it from the questionnaire list first.
               </p>
