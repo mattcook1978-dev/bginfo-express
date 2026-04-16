@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, Share2, Check } from 'lucide-react'
-import type { QuestionnaireType, PackageVariant, ExpressLearnerRecord, ImportedQuestionnaire } from '../../types'
-import { saveAssessorRecord, loadAllImportedQuestionnaires } from '../../lib/storage'
+import type { QuestionnaireType, PackageVariant, ExpressLearnerRecord, ImportedQuestionnaire, AssessorPreferences } from '../../types'
+import { saveAssessorRecord, loadAllImportedQuestionnaires, saveAssessorPreferences, loadAssessorPreferences } from '../../lib/storage'
 import { hashCode } from '../../lib/crypto'
 import { publishCodeMapping } from '../../lib/fetchQuestionnaire'
 import { supabase } from '../../lib/supabase'
@@ -28,15 +28,25 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [qType, setQType] = useState<QuestionnaireType>('under16')
+  const [mainQuestionnaire, setMainQuestionnaire] = useState<'standard' | string>('standard')
+  const [includeVisual, setIncludeVisual] = useState(true)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [importedQuestionnaires, setImportedQuestionnaires] = useState<ImportedQuestionnaire[]>([])
-  const [selectedImportedId, setSelectedImportedId] = useState<string>('')
   const [savedRecord, setSavedRecord] = useState<ExpressLearnerRecord | null>(null)
   const [copied, setCopied] = useState<'background' | 'visual' | null>(null)
 
   useEffect(() => {
-    loadAllImportedQuestionnaires().then(qs => setImportedQuestionnaires(qs))
+    Promise.all([
+      loadAllImportedQuestionnaires(),
+      loadAssessorPreferences(),
+    ]).then(([qs, prefs]) => {
+      setImportedQuestionnaires(qs)
+      if (prefs) {
+        setMainQuestionnaire(prefs.mainQuestionnaire)
+        setIncludeVisual(prefs.includeVisual)
+      }
+    })
   }, [])
 
   const validate = () => {
@@ -70,9 +80,15 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
       }
 
       const fullName = `${firstName.trim()} ${lastName.trim()}`
-      const isCustom = selectedImportedId !== ''
+      const isCustom = mainQuestionnaire !== 'standard'
       const code = generateInternalCode(qType, isCustom ? 'custom' : 'remainder')
-      const visualCode = generateInternalCode(qType, 'visual')
+      const visualCode = includeVisual ? generateInternalCode(qType, 'visual') : undefined
+
+      const packages: Partial<Record<PackageVariant, { status: 'sent'; code: string }>> = {
+        remainder: { status: 'sent', code },
+      }
+      if (visualCode) packages.visual = { status: 'sent', code: visualCode }
+
       const record: ExpressLearnerRecord = {
         id: crypto.randomUUID(),
         name: fullName,
@@ -80,22 +96,24 @@ export default function AddLearnerModal({ onClose, onAdded }: AddLearnerModalPro
         lastName: lastName.trim(),
         code,
         questionnaireType: qType,
-        importedQuestionnaireId: isCustom ? selectedImportedId : undefined,
+        importedQuestionnaireId: isCustom ? mainQuestionnaire : undefined,
         createdAt: new Date().toISOString(),
         submitted: false,
-        packages: {
-          remainder: { status: 'sent', code },
-          visual: { status: 'sent', code: visualCode },
-        },
+        packages,
       }
       await saveAssessorRecord(record)
       if (isCustom) {
-        const selectedQ = importedQuestionnaires.find(q => q.id === selectedImportedId)
+        const selectedQ = importedQuestionnaires.find(q => q.id === mainQuestionnaire)
         if (selectedQ?.publishedAt) {
           const codeHash = await hashCode(code)
-          await publishCodeMapping(codeHash, selectedImportedId)
+          await publishCodeMapping(codeHash, mainQuestionnaire)
         }
       }
+
+      // Save preferences for next time
+      const prefs: AssessorPreferences = { mainQuestionnaire, includeVisual }
+      await saveAssessorPreferences(prefs)
+
       incrementMonthlyCount()
       onAdded(record)
       setSavedRecord(record)
@@ -239,28 +257,55 @@ If you have any questions, please get in touch.`
             </div>
           </div>
 
-          {importedQuestionnaires.length > 0 && (
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Custom Questionnaire <span className="font-normal text-gray-400">(optional)</span>
-              </label>
-              <select
-                value={selectedImportedId}
-                onChange={e => setSelectedImportedId(e.target.value)}
-                className="w-full border-2 border-gray-300 rounded-xl py-3 px-4 text-base focus:outline-none focus:border-primary-500 transition-colors bg-white text-gray-700"
-              >
-                <option value="">Standard questionnaire</option>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Questionnaires</label>
+            <div className="space-y-2">
+              {/* Main questionnaire */}
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setMainQuestionnaire('standard')}
+                  className={`w-full py-3 px-4 rounded-xl border-2 font-medium transition-all text-sm text-left ${
+                    mainQuestionnaire === 'standard' ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
+                  }`}
+                >
+                  Background questionnaire
+                  <div className="text-xs font-normal opacity-75 mt-0.5">{qType === 'under16' ? 'Parent/Carer' : 'Individual'} — standard</div>
+                </button>
                 {importedQuestionnaires.map(q => (
-                  <option key={q.id} value={q.id}>{q.name}{!q.publishedAt ? ' (not published)' : ''}</option>
+                  <button
+                    key={q.id}
+                    type="button"
+                    onClick={() => setMainQuestionnaire(q.id)}
+                    className={`w-full py-3 px-4 rounded-xl border-2 font-medium transition-all text-sm text-left ${
+                      mainQuestionnaire === q.id ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
+                    }`}
+                  >
+                    {q.name}
+                    {!q.publishedAt && <span className="text-xs font-normal opacity-75 ml-1">(not published)</span>}
+                    <div className="text-xs font-normal opacity-75 mt-0.5">Custom questionnaire</div>
+                  </button>
                 ))}
-              </select>
-              {selectedImportedId && !importedQuestionnaires.find(q => q.id === selectedImportedId)?.publishedAt && (
-                <p className="text-xs text-amber-600 mt-1 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                  This questionnaire has not been published yet. Publish it from the questionnaire list first.
-                </p>
-              )}
+              </div>
+
+              {/* Visual toggle */}
+              <button
+                type="button"
+                onClick={() => setIncludeVisual(v => !v)}
+                className={`w-full py-3 px-4 rounded-xl border-2 font-medium transition-all text-sm text-left ${
+                  includeVisual ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300'
+                }`}
+              >
+                Visual questionnaire
+                <div className="text-xs font-normal opacity-75 mt-0.5">{includeVisual ? 'Included' : 'Not included'}</div>
+              </button>
             </div>
-          )}
+            {mainQuestionnaire !== 'standard' && !importedQuestionnaires.find(q => q.id === mainQuestionnaire)?.publishedAt && (
+              <p className="text-xs text-amber-600 mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                This questionnaire has not been published yet. Publish it from the questionnaire list first.
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex gap-3 p-5 border-t border-gray-100">

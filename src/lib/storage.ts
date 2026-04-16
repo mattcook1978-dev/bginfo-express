@@ -1,8 +1,8 @@
 import { openDB, type IDBPDatabase } from 'idb'
-import type { LearnerSession, ExpressLearnerRecord, ImportedQuestionnaire } from '../types'
+import type { LearnerSession, ExpressLearnerRecord, ImportedQuestionnaire, AssessorPreferences } from '../types'
 
 const DB_NAME = 'bginfo-express'
-const DB_VERSION = 1
+const DB_VERSION = 2
 
 interface ExpressDB {
   sessions: {
@@ -21,6 +21,10 @@ interface ExpressDB {
     key: string
     value: { codeHash: string; cryptoKey: CryptoKey }
   }
+  preferences: {
+    key: string
+    value: { key: string } & AssessorPreferences
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<ExpressDB>> | null = null
@@ -28,11 +32,16 @@ let dbPromise: Promise<IDBPDatabase<ExpressDB>> | null = null
 function getDB(): Promise<IDBPDatabase<ExpressDB>> {
   if (!dbPromise) {
     dbPromise = openDB<ExpressDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        db.createObjectStore('sessions', { keyPath: 'codeHash' })
-        db.createObjectStore('assessor', { keyPath: 'id' })
-        db.createObjectStore('importedQuestionnaires', { keyPath: 'id' })
-        db.createObjectStore('sessionKeys', { keyPath: 'codeHash' })
+      upgrade(db, oldVersion) {
+        if (oldVersion < 1) {
+          db.createObjectStore('sessions', { keyPath: 'codeHash' })
+          db.createObjectStore('assessor', { keyPath: 'id' })
+          db.createObjectStore('importedQuestionnaires', { keyPath: 'id' })
+          db.createObjectStore('sessionKeys', { keyPath: 'codeHash' })
+        }
+        if (oldVersion < 2) {
+          db.createObjectStore('preferences', { keyPath: 'key' })
+        }
       },
       blocked() {
         console.warn('BGInfo Express DB upgrade blocked by another tab')
@@ -116,4 +125,19 @@ export async function loadAllImportedQuestionnaires(): Promise<ImportedQuestionn
 export async function deleteImportedQuestionnaire(id: string): Promise<void> {
   const db = await getDB()
   await db.delete('importedQuestionnaires', id)
+}
+
+// ── Assessor preferences ──────────────────────────────────────────────────────
+
+export async function saveAssessorPreferences(prefs: AssessorPreferences): Promise<void> {
+  const db = await getDB()
+  await db.put('preferences', { key: 'assessor', ...prefs })
+}
+
+export async function loadAssessorPreferences(): Promise<AssessorPreferences | undefined> {
+  const db = await getDB()
+  const row = await db.get('preferences', 'assessor')
+  if (!row) return undefined
+  const { key: _key, ...prefs } = row
+  return prefs as AssessorPreferences
 }

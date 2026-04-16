@@ -1,7 +1,7 @@
 import { createContext, useContext, useCallback, useRef, type ReactNode } from 'react'
 import { useAuth } from './AuthContext'
 import { uploadSync, downloadSync, type SyncPayload } from '../lib/sync'
-import { loadAllAssessorRecords, loadAllImportedQuestionnaires, saveAssessorRecord, saveImportedQuestionnaire } from '../lib/storage'
+import { loadAllAssessorRecords, loadAllImportedQuestionnaires, saveAssessorRecord, saveImportedQuestionnaire, loadAssessorPreferences, saveAssessorPreferences } from '../lib/storage'
 
 interface SyncContextValue {
   triggerUpload: () => void
@@ -19,13 +19,15 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     if (!encryptionKey) return
     if (uploadTimer.current) clearTimeout(uploadTimer.current)
     uploadTimer.current = setTimeout(async () => {
-      const [records, questionnaires] = await Promise.all([
+      const [records, questionnaires, preferences] = await Promise.all([
         loadAllAssessorRecords(),
         loadAllImportedQuestionnaires(),
+        loadAssessorPreferences(),
       ])
       const payload: SyncPayload = {
         records,
         questionnaires,
+        preferences,
         updatedAt: new Date().toISOString(),
       }
       await uploadSync(encryptionKey, payload)
@@ -53,6 +55,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     await Promise.all([
       ...cloudData.records.map(r => saveAssessorRecord(r)),
       ...cloudData.questionnaires.map(q => saveImportedQuestionnaire(q)),
+      ...(cloudData.preferences ? [saveAssessorPreferences(cloudData.preferences)] : []),
     ])
 
     return true

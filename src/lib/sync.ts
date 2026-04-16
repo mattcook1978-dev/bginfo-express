@@ -1,8 +1,9 @@
-import type { ExpressLearnerRecord, ImportedQuestionnaire } from '../types'
+import type { ExpressLearnerRecord, ImportedQuestionnaire, AssessorPreferences } from '../types'
 
 export interface SyncPayload {
   records: ExpressLearnerRecord[]
   questionnaires: ImportedQuestionnaire[]
+  preferences?: AssessorPreferences
   updatedAt: string
 }
 

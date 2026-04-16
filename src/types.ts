@@ -95,6 +95,11 @@ export interface ExpressLearnerRecord {
   keyNotes?: Record<string, string> // reportSectionId → generated prose
 }
 
+export interface AssessorPreferences {
+  mainQuestionnaire: 'standard' | string  // 'standard' or a custom questionnaire ID
+  includeVisual: boolean
+}
+
 // Key-points bank entry
 export interface KPEntry {
   topic: string
