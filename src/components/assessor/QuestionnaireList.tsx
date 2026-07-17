@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Plus, Upload, Globe, Pencil, Trash2, X, Link, MessageSquare } from 'lucide-react'
-import type { ImportedQuestionnaire, Section } from '../../types'
-import { loadAllImportedQuestionnaires, deleteImportedQuestionnaire } from '../../lib/storage'
+import { ChevronLeft, Plus, Upload, Globe, Pencil, Copy, Trash2, X, Link, MessageSquare } from 'lucide-react'
+import type { ImportedQuestionnaire } from '../../types'
+import { loadAllImportedQuestionnaires, saveImportedQuestionnaire, deleteImportedQuestionnaire } from '../../lib/storage'
 import QuestionnaireBuilder, { importedQuestionnaireToBuilderSections } from './QuestionnaireBuilder'
 import QuestionnaireImport from './QuestionnaireImport'
-import QuestionnaireViewer from './QuestionnaireViewer'
 import RequestQuestionnaireModal from './RequestQuestionnaireModal'
 import { questionnaireVisual } from '../../lib/questionnaire'
 import { questionnaire16plus } from '../../data/questionnaire-16plus'
@@ -13,7 +12,7 @@ import { useAuth } from '../../contexts/AuthContext'
 
 const ADMIN_EMAIL = 'mattcook1978@gmail.com'
 
-type View = 'list' | 'build' | 'import' | 'view'
+type View = 'list' | 'build' | 'import'
 
 interface QuestionnaireListProps {
   onBack: () => void
@@ -26,21 +25,13 @@ interface BuilderInitialData {
   createdAt?: string
 }
 
-interface ViewerData {
-  name: string
-  sections: Section[]
-  isBuiltIn: boolean
-  builtInKey?: 'under16' | '16plus' | 'visual'
-  customId?: string
-}
-
 const BUILT_IN = [
   { key: 'under16' as const, label: 'Under 16', sub: 'Parent/Carer questionnaire' },
   { key: '16plus' as const, label: '16 or over', sub: 'Individual questionnaire' },
   { key: 'visual' as const, label: 'Visual', sub: 'Visual history and difficulties' },
 ]
 
-function getBuiltInSections(key: 'under16' | '16plus' | 'visual'): Section[] {
+function getBuiltInSections(key: 'under16' | '16plus' | 'visual') {
   if (key === 'under16') return questionnaireUnder16.sections
   if (key === '16plus') return questionnaire16plus.sections
   return questionnaireVisual.sections
@@ -53,7 +44,9 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
   const [questionnaires, setQuestionnaires] = useState<ImportedQuestionnaire[]>([])
   const [builderInitialData, setBuilderInitialData] = useState<BuilderInitialData | null>(null)
   const [builderAllowSubsections, setBuilderAllowSubsections] = useState(true)
-  const [viewerData, setViewerData] = useState<ViewerData | null>(null)
+  const [builderKey, setBuilderKey] = useState(0)
+  const [builderStartReadOnly, setBuilderStartReadOnly] = useState(false)
+  const [builderIsBuiltIn, setBuilderIsBuiltIn] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -62,9 +55,13 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
     loadAllImportedQuestionnaires().then(setQuestionnaires)
   }, [])
 
-  const openViewer = (data: ViewerData) => {
-    setViewerData(data)
-    setView('view')
+  function openInBuilder(data: BuilderInitialData, opts: { readOnly: boolean; isBuiltIn: boolean; allowSubsections?: boolean }) {
+    setBuilderInitialData(data)
+    setBuilderStartReadOnly(opts.readOnly)
+    setBuilderIsBuiltIn(opts.isBuiltIn)
+    setBuilderAllowSubsections(opts.allowSubsections ?? true)
+    setBuilderKey(k => k + 1)
+    setView('build')
   }
 
   function handleCopyLink(id: string) {
@@ -75,42 +72,32 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
     })
   }
 
-  const handleDuplicateAndEdit = (key: 'under16' | '16plus' | 'visual', label: string) => {
-    const sections = getBuiltInSections(key)
-    const fakeIq: ImportedQuestionnaire = {
-      id: '',
-      name: `${label} (copy)`,
-      sections,
-      keyPointsBank: {},
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+  async function handleDuplicateQuestionnaire(q: ImportedQuestionnaire) {
+    const now = new Date().toISOString()
+    const copy: ImportedQuestionnaire = {
+      ...q,
+      id: `iq_${Date.now()}`,
+      name: `Duplicate of ${q.name}`,
+      createdAt: now,
+      updatedAt: now,
+      publishedAt: undefined,
     }
-    setBuilderInitialData({
-      sections: importedQuestionnaireToBuilderSections(fakeIq),
-      name: `${label} (copy)`,
-    })
-    setView('build')
+    await saveImportedQuestionnaire(copy)
+    setQuestionnaires(prev => [...prev, copy])
   }
 
-  if (view === 'view' && viewerData) {
-    return (
-      <QuestionnaireViewer
-        name={viewerData.name}
-        sections={viewerData.sections}
-        isBuiltIn={viewerData.isBuiltIn}
-        onBack={() => { setViewerData(null); setView('list') }}
-        onDuplicateAndEdit={
-          viewerData.isBuiltIn && viewerData.builtInKey
-            ? () => handleDuplicateAndEdit(viewerData.builtInKey!, viewerData.name)
-            : undefined
-        }
-      />
+  function handleDuplicateAndEdit() {
+    if (!builderInitialData) return
+    openInBuilder(
+      { sections: builderInitialData.sections, name: `${builderInitialData.name} (copy)` },
+      { readOnly: false, isBuiltIn: false }
     )
   }
 
   if (view === 'build') {
     return (
       <QuestionnaireBuilder
+        key={builderKey}
         onBack={() => { setBuilderInitialData(null); setBuilderAllowSubsections(true); setView('list') }}
         onSaved={q => {
           setQuestionnaires(prev => {
@@ -123,6 +110,9 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
         }}
         allowSubsections={builderAllowSubsections}
         initialData={builderInitialData ?? undefined}
+        startReadOnly={builderStartReadOnly}
+        isBuiltIn={builderIsBuiltIn}
+        onDuplicateAndEdit={handleDuplicateAndEdit}
       />
     )
   }
@@ -132,9 +122,7 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
       <QuestionnaireImport
         onBack={() => setView('list')}
         onReadyForBuilder={sections => {
-          setBuilderInitialData({ sections, name: '' })
-          setBuilderAllowSubsections(false)
-          setView('build')
+          openInBuilder({ sections, name: '' }, { readOnly: false, isBuiltIn: false, allowSubsections: false })
         }}
       />
     )
@@ -154,7 +142,7 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
           <h1 className="font-bold text-gray-900 text-lg flex-1">Questionnaires</h1>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setBuilderInitialData(null); setView('build') }}
+              onClick={() => openInBuilder({ sections: importedQuestionnaireToBuilderSections({ id: '', name: '', sections: [], keyPointsBank: {}, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }), name: '' }, { readOnly: false, isBuiltIn: false })}
               className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-lg text-sm font-medium transition-colors"
             >
               <Plus className="w-4 h-4" />
@@ -177,17 +165,35 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
         <div className="space-y-2">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-1">Standard</p>
           {BUILT_IN.map(q => (
-            <button
+            <div
               key={q.key}
-              onClick={() => openViewer({ name: q.label, sections: getBuiltInSections(q.key), isBuiltIn: true, builtInKey: q.key })}
-              className="w-full bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all rounded-xl px-4 py-3 flex items-center justify-between text-left"
+              className="w-full bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all rounded-xl px-4 py-3 flex items-center gap-2"
             >
-              <div>
+              <button
+                onClick={() => {
+                  const sections = getBuiltInSections(q.key)
+                  const fakeIq: ImportedQuestionnaire = { id: '', name: q.label, sections, keyPointsBank: {}, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+                  openInBuilder({ sections: importedQuestionnaireToBuilderSections(fakeIq), name: q.label }, { readOnly: true, isBuiltIn: true })
+                }}
+                className="flex-1 text-left"
+              >
                 <div className="font-medium text-gray-900 text-sm">{q.label}</div>
                 <div className="text-xs text-gray-500 mt-0.5">{q.sub}</div>
-              </div>
+              </button>
               <span className="text-xs text-gray-500 bg-gray-100 border border-gray-200 rounded px-2 py-0.5 shrink-0">Built-in</span>
-            </button>
+              <button
+                onClick={() => {
+                  const sections = getBuiltInSections(q.key)
+                  const now = new Date().toISOString()
+                  const copy: ImportedQuestionnaire = { id: `iq_${Date.now()}`, name: `Duplicate of ${q.label}`, sections, keyPointsBank: {}, createdAt: now, updatedAt: now }
+                  saveImportedQuestionnaire(copy).then(() => setQuestionnaires(prev => [...prev, copy]))
+                }}
+                className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors shrink-0"
+                title="Duplicate questionnaire"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
           ))}
         </div>
 
@@ -204,12 +210,17 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
             </button>
           ) : (
             questionnaires.map(q => (
-              <button
+              <div
                 key={q.id}
-                onClick={() => openViewer({ name: q.name, sections: q.sections, isBuiltIn: false, customId: q.id })}
-                className="w-full bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all rounded-xl p-4 flex items-center gap-3 text-left"
+                className="w-full bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all rounded-xl p-4 flex items-center gap-3"
               >
-                <div className="flex-1 min-w-0">
+                <button
+                  onClick={() => openInBuilder(
+                    { sections: importedQuestionnaireToBuilderSections(q), name: q.name, id: q.id, createdAt: q.createdAt },
+                    { readOnly: true, isBuiltIn: false }
+                  )}
+                  className="flex-1 min-w-0 text-left"
+                >
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-gray-900 text-sm">{q.name}</span>
                     {q.publishedAt && (
@@ -222,10 +233,10 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
                   <div className="text-xs text-gray-500 mt-0.5">
                     {new Date(q.createdAt).toLocaleDateString()} · {q.sections.length} section{q.sections.length !== 1 ? 's' : ''}
                   </div>
-                </div>
+                </button>
                 {isAdmin && q.publishedAt && (
                   <button
-                    onClick={e => { e.stopPropagation(); handleCopyLink(q.id) }}
+                    onClick={() => handleCopyLink(q.id)}
                     className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-green-600 transition-colors shrink-0"
                     title="Copy share link"
                   >
@@ -233,24 +244,24 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
                   </button>
                 )}
                 <button
-                  onClick={e => {
-                    e.stopPropagation()
-                    setBuilderInitialData({
-                      sections: importedQuestionnaireToBuilderSections(q),
-                      name: q.name,
-                      id: q.id,
-                      createdAt: q.createdAt,
-                    })
-                    setView('build')
-                  }}
+                  onClick={() => handleDuplicateQuestionnaire(q)}
+                  className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors shrink-0"
+                  title="Duplicate questionnaire"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => openInBuilder(
+                    { sections: importedQuestionnaireToBuilderSections(q), name: q.name, id: q.id, createdAt: q.createdAt },
+                    { readOnly: false, isBuiltIn: false }
+                  )}
                   className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors shrink-0"
                   title="Edit"
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={async e => {
-                    e.stopPropagation()
+                  onClick={async () => {
                     await deleteImportedQuestionnaire(q.id)
                     setQuestionnaires(prev => prev.filter(x => x.id !== q.id))
                   }}
@@ -259,7 +270,7 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
-              </button>
+              </div>
             ))
           )}
         </div>
@@ -277,7 +288,10 @@ export default function QuestionnaireList({ onBack }: QuestionnaireListProps) {
             </div>
             <div className="p-5 space-y-3">
               <button
-                onClick={() => { setShowAddModal(false); setBuilderInitialData(null); setView('build') }}
+                onClick={() => {
+                  setShowAddModal(false)
+                  openInBuilder({ sections: importedQuestionnaireToBuilderSections({ id: '', name: '', sections: [], keyPointsBank: {}, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }), name: '' }, { readOnly: false, isBuiltIn: false })
+                }}
                 className="w-full flex items-center gap-4 px-4 py-4 bg-white border border-gray-200 hover:border-gray-900 hover:bg-gray-50 rounded-xl transition-all text-left"
               >
                 <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">

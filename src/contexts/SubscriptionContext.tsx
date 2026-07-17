@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 export type SubscriptionStatus = 'loading' | 'none' | 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid'
 
 const MONTHLY_LIMIT = 15
+const ADMIN_EMAIL = 'mattcook1978@gmail.com'
 
 function getMonthlyResetDate(): string {
   const now = new Date()
@@ -42,6 +43,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
       setState({ status: 'none', currentPeriodEnd: null, trialEnd: null, cancelAtPeriodEnd: false, monthlyCount: 0 })
+      return
+    }
+
+    if (session.user.email === ADMIN_EMAIL) {
+      setState({ status: 'active', currentPeriodEnd: null, trialEnd: null, cancelAtPeriodEnd: false, monthlyCount: 0 })
       return
     }
 

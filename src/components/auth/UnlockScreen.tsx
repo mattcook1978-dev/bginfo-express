@@ -18,7 +18,7 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
     setLoading(true)
     const err = await unlockKey(password)
     if (err) {
-      setError('Incorrect password.')
+      setError(err)
     } else {
       onUnlocked()
     }

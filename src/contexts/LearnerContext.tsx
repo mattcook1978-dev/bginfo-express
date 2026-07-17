@@ -185,4 +185,44 @@ export function useLearner() {
   return ctx
 }
 
+// Lightweight mock provider for preview/testing — no crypto, no persistence
+export function PreviewLearnerProvider({ children }: { children: ReactNode }) {
+  const [responses, setResponsesState] = useState<Responses>({})
+  const [preferences, setPreferencesState] = useState<DisplayPreferences>(DEFAULT_PREFERENCES)
+
+  const setResponses = useCallback((r: Responses) => setResponsesState(r), [])
+
+  const updateResponse = useCallback((questionId: string, value: string | string[] | boolean) => {
+    setResponsesState(prev => ({ ...prev, [questionId]: value }))
+  }, [])
+
+  const updatePreferences = useCallback((prefs: Partial<DisplayPreferences>) => {
+    setPreferencesState(prev => ({ ...prev, ...prefs }))
+  }, [])
+
+  return (
+    <LearnerContext.Provider
+      value={{
+        questionnaireType: null,
+        packageVariant: null,
+        importedQuestionnaire: null,
+        responses,
+        preferences,
+        cryptoKey: null,
+        codeHash: null,
+        session: null,
+        isLoading: false,
+        saveStatus: 'idle',
+        setResponses,
+        updateResponse,
+        updatePreferences,
+        initSession: () => {},
+        clearSession: () => {},
+      }}
+    >
+      {children}
+    </LearnerContext.Provider>
+  )
+}
+
 export { DEFAULT_PREFERENCES }
