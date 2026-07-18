@@ -96,11 +96,15 @@ function OptionsStrip({ q, onChange }: { q: BQuestion; onChange: (q: BQuestion) 
   )
 }
 
-function OptionsPopover({ options, onChange, readOnly }: { options: string[]; onChange: (opts: string[]) => void; readOnly?: boolean }) {
+function OptionsPopover({ options, onChange, readOnly, autoOpen, onAutoOpened }: { options: string[]; onChange: (opts: string[]) => void; readOnly?: boolean; autoOpen?: boolean; onAutoOpened?: () => void }) {
   const [open, setOpen] = useState(false)
   const [newOpt, setNewOpt] = useState('')
   const ref = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (autoOpen) { setOpen(true); onAutoOpened?.() }
+  }, [autoOpen])
 
   useEffect(() => {
     if (!open) return
@@ -552,6 +556,7 @@ function FollowUpOverview({ fu, parentLabel, depth, parentType, parentOptions, o
 }) {
   const triggerOptions = parentType === 'single_choice' || parentType === 'multi_choice'
     ? parentOptions : (TRIGGER_OPTIONS[parentType] ?? [])
+  const [autoOpenOpts, setAutoOpenOpts] = useState<Record<number, boolean>>({})
 
   function moveQuestion(fromIdx: number, toIdx: number) {
     const qs = [...fu.questions]
@@ -560,17 +565,7 @@ function FollowUpOverview({ fu, parentLabel, depth, parentType, parentOptions, o
     onChangeFu({ ...fu, questions: qs })
   }
 
-  function addNestedFollowUp(i: number, fq: BQuestion) {
-    const triggers = fq.type === 'single_choice' || fq.type === 'multi_choice'
-      ? fq.options : (TRIGGER_OPTIONS[fq.type] ?? [])
-    const defaultTrigger: string | string[] = fq.type === 'multi_choice'
-      ? (triggers.length > 0 ? [triggers[0]] : [])
-      : (triggers[0] ?? 'Yes')
-    const updatedQuestions = fu.questions.map((q, idx) =>
-      idx === i ? { ...q, followUp: { trigger: defaultTrigger, questions: [newQuestion()] } } : q
-    )
-    onChangeFu({ ...fu, questions: updatedQuestions })
-  }
+
 
   return (
     <>
@@ -619,6 +614,7 @@ function FollowUpOverview({ fu, parentLabel, depth, parentType, parentOptions, o
               <TypePicker type={fq.type} onChange={t => {
                 const updatedQuestions = fu.questions.map((q, idx) => idx === i ? { ...q, type: t } : q)
                 onChangeFu({ ...fu, questions: updatedQuestions })
+                if (t === 'single_choice' || t === 'multi_choice') setAutoOpenOpts(prev => ({ ...prev, [i]: true }))
               }} readOnly={readOnly} />
               {(fq.type === 'single_choice' || fq.type === 'multi_choice') && (
                 <OptionsPopover
@@ -628,16 +624,8 @@ function FollowUpOverview({ fu, parentLabel, depth, parentType, parentOptions, o
                     onChangeFu({ ...fu, questions: updatedQuestions })
                   }}
                   readOnly={readOnly}
+                  autoOpen={autoOpenOpts[i]} onAutoOpened={() => setAutoOpenOpts(prev => ({ ...prev, [i]: false }))}
                 />
-              )}
-              {!readOnly && !fq.followUp && (
-                <button
-                  onClick={e => { e.stopPropagation(); addNestedFollowUp(i, fq) }}
-                  title="Add follow-up to this question"
-                  className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-300 hover:text-gray-500 transition-all shrink-0"
-                >
-                  <Plus className="w-3 h-3" />
-                </button>
               )}
               {!readOnly && (
                 <DeleteConfirm
@@ -676,7 +664,7 @@ function FollowUpOverview({ fu, parentLabel, depth, parentType, parentOptions, o
           onClick={() => onChangeFu({ ...fu, questions: [...fu.questions, newQuestion()] })}
           className="flex items-center gap-1 text-xs text-gray-300 hover:text-gray-500 transition-colors pt-1 pl-4"
         >
-          <Plus className="w-3 h-3" /> Add question
+          <Plus className="w-3 h-3" /> {depth === 0 ? 'add follow-up' : 'add follow-up to follow-up'}
         </button>
       )}
     </>
@@ -693,6 +681,7 @@ function QuestionOverviewRow({ q, label, currentSectionId, sectionOptions, onMov
 }) {
   const dragOver = !readOnly && dragHandlers.dragOver?.uid === q.uid ? dragHandlers.dragOver : null
   const [showFollowUps, setShowFollowUps] = useState(false)
+  const [autoOpenOptions, setAutoOpenOptions] = useState(false)
   const hasFollowUps = !!(q.followUp && q.followUp.questions.length > 0)
 
   return (
@@ -721,9 +710,13 @@ function QuestionOverviewRow({ q, label, currentSectionId, sectionOptions, onMov
           className="flex-1 text-sm text-gray-700 min-w-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-blue-200 rounded px-1 -mx-1"
         />
 
-        <TypePicker type={q.type} onChange={t => onChange({ ...q, type: t })} readOnly={readOnly} />
+        <TypePicker type={q.type} onChange={t => {
+          onChange({ ...q, type: t })
+          if (t === 'single_choice' || t === 'multi_choice') setAutoOpenOptions(true)
+        }} readOnly={readOnly} />
         {(q.type === 'single_choice' || q.type === 'multi_choice') && (
-          <OptionsPopover options={q.options} onChange={opts => onChange({ ...q, options: opts })} readOnly={readOnly} />
+          <OptionsPopover options={q.options} onChange={opts => onChange({ ...q, options: opts })} readOnly={readOnly}
+            autoOpen={autoOpenOptions} onAutoOpened={() => setAutoOpenOptions(false)} />
         )}
         {!readOnly && <DeleteConfirm message="Delete this question?" onConfirm={onDelete} />}
       </div>
@@ -850,13 +843,14 @@ function QuestionRow({ q, label, depth, sectionOptions, currentSectionId, onChan
 
 // ── Section group ──────────────────────────────────────────────────────────────
 
-function SectionGroup({ bs, sectionOptions, onChange, onMoveQuestion, onBeforeDelete, onDelete, readOnly, dragHandlers, sectionDrag }: {
+function SectionGroup({ bs, sectionOptions, onChange, onMoveQuestion, onBeforeDelete, onDelete, readOnly, defaultExpanded, dragHandlers, sectionDrag }: {
   bs: BSection; sectionOptions: SectionOption[]
   onChange: (updated: BSection) => void
   onMoveQuestion: (questionUid: string, toSectionId: string) => void
   onBeforeDelete: () => void
   onDelete: () => void
   readOnly?: boolean
+  defaultExpanded?: boolean
   dragHandlers: DragHandlers
   sectionDrag: SectionDragHandlers
 }) {
@@ -866,7 +860,7 @@ function SectionGroup({ bs, sectionOptions, onChange, onMoveQuestion, onBeforeDe
   const questionCount = directCount + subCount
   const flaggedCount = [...bs.questions, ...bs.subsections.flatMap(s => s.questions)].filter(q => q.flagged).length
 
-  const [collapsed, setCollapsed] = useState(true)
+  const [collapsed, setCollapsed] = useState(!defaultExpanded)
   const [editingSubIdx, setEditingSubIdx] = useState<number | null>(null)
 
   const labelMap = new Map<string, string>()
@@ -891,6 +885,23 @@ function SectionGroup({ bs, sectionOptions, onChange, onMoveQuestion, onBeforeDe
   function updateSubsectionTitle(si: number, title: string) {
     onChange({ ...bs, subsections: bs.subsections.map((sub, i) => i === si ? { ...sub, title } : sub) })
   }
+  function insertQuestion(atIndex: number) {
+    const qs = [...bs.questions]
+    qs.splice(atIndex, 0, newQuestion())
+    onChange({ ...bs, questions: qs })
+    if (collapsed) setCollapsed(false)
+  }
+
+  function insertSubsectionQuestion(si: number, atIndex: number) {
+    onChange({ ...bs, subsections: bs.subsections.map((sub, i) => {
+      if (i !== si) return sub
+      const qs = [...sub.questions]
+      qs.splice(atIndex, 0, newQuestion())
+      return { ...sub, questions: qs }
+    })})
+    if (collapsed) setCollapsed(false)
+  }
+
   function addQuestion() {
     onChange({ ...bs, questions: [...bs.questions, newQuestion()] })
     if (collapsed) setCollapsed(false)
@@ -989,15 +1000,41 @@ function SectionGroup({ bs, sectionOptions, onChange, onMoveQuestion, onBeforeDe
                 <div className={`flex-1 h-px ${style.divider}`} />
               </div>
               <div className="space-y-2">
-                {sub.questions.map(q => renderQ(q,
-                  updated => updateSubsectionQuestion(si, q.uid, updated),
-                  () => deleteSubsectionQuestion(si, q.uid),
+                {sub.questions.map((q, idx) => (
+                  <div key={q.uid} className={!readOnly ? 'relative pt-2.5' : undefined}>
+                    {!readOnly && (
+                      <button
+                        onClick={() => insertSubsectionQuestion(si, idx)}
+                        title="Insert question here"
+                        className="absolute top-2.5 -translate-y-1/2 right-10 z-10 w-5 h-5 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-[9px] font-bold text-gray-400 hover:text-primary-500 hover:border-primary-400 transition-colors select-none"
+                      >
+                        +Q
+                      </button>
+                    )}
+                    {renderQ(q,
+                      updated => updateSubsectionQuestion(si, q.uid, updated),
+                      () => deleteSubsectionQuestion(si, q.uid),
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
           ))}
 
-          {bs.questions.map(q => renderQ(q, updated => updateQuestion(q.uid, updated), () => deleteQuestion(q.uid)))}
+          {bs.questions.map((q, idx) => (
+            <div key={q.uid} className={!readOnly ? 'relative pt-2.5' : undefined}>
+              {!readOnly && (
+                <button
+                  onClick={() => insertQuestion(idx)}
+                  title="Insert question here"
+                  className="absolute top-2.5 -translate-y-1/2 right-10 z-10 w-5 h-5 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-[9px] font-bold text-gray-400 hover:text-primary-500 hover:border-primary-400 transition-colors select-none"
+                >
+                  +Q
+                </button>
+              )}
+              {renderQ(q, updated => updateQuestion(q.uid, updated), () => deleteQuestion(q.uid))}
+            </div>
+          ))}
 
           {!readOnly && (
             <button onClick={addQuestion}
@@ -1013,8 +1050,8 @@ function SectionGroup({ bs, sectionOptions, onChange, onMoveQuestion, onBeforeDe
 
 // ── Main export ────────────────────────────────────────────────────────────────
 
-export default function QuestionnaireTableEditor({ sections, onChange, onBeforeDelete, readOnly }: {
-  sections: BSection[]; onChange: (sections: BSection[]) => void; onBeforeDelete: () => void; readOnly?: boolean
+export default function QuestionnaireTableEditor({ sections, onChange, onBeforeDelete, readOnly, defaultExpanded }: {
+  sections: BSection[]; onChange: (sections: BSection[]) => void; onBeforeDelete: () => void; readOnly?: boolean; defaultExpanded?: boolean
 }) {
   const dragRef = useRef<string | null>(null)
   const dropPositionRef = useRef<'before' | 'after'>('before')
@@ -1170,6 +1207,7 @@ export default function QuestionnaireTableEditor({ sections, onChange, onBeforeD
               onBeforeDelete={onBeforeDelete}
               onDelete={() => deleteSection(i)}
               readOnly={readOnly}
+              defaultExpanded={defaultExpanded && (bs.questions.length + bs.subsections.reduce((n, s) => n + s.questions.length, 0)) > 0}
               dragHandlers={dragHandlers}
               sectionDrag={makeSectionDrag(i)} />
             {isOver && sectionDragOver?.position === 'after' && (

@@ -234,7 +234,7 @@ function LearnerPreviewView({ sections, onClose }: { sections: BSection[]; onClo
       <button
         onClick={onClose}
         title="Close preview"
-        className="fixed top-3 right-3 z-10 flex items-center gap-1.5 bg-white border border-gray-200 shadow-md rounded-lg px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 bg-white border border-gray-200 shadow-lg rounded-lg px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
       >
         <X className="w-4 h-4" />
         Close preview
@@ -270,6 +270,7 @@ export default function QuestionnaireBuilder({
   const nameInputRef = useRef<HTMLInputElement>(null)
   const [sections, setSections] = useState<BSection[]>(makeFixedSections(initialData))
   const [readOnly, setReadOnly] = useState(startReadOnly ?? false)
+  const [editorKey, setEditorKey] = useState(0)
   const [previewMode, setPreviewMode] = useState(false)
   const [undoStack, setUndoStack] = useState<BSection[] | null>(null)
   const [saving, setSaving] = useState(false)
@@ -380,7 +381,7 @@ export default function QuestionnaireBuilder({
               </button>
             ) : (
               <button
-                onClick={() => setReadOnly(false)}
+                onClick={() => { setReadOnly(false); setEditorKey(k => k + 1) }}
                 title="Edit questionnaire"
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-gray-900 rounded-lg text-sm font-medium transition-colors shrink-0"
               >
@@ -451,10 +452,12 @@ export default function QuestionnaireBuilder({
 
           {/* Table editor */}
           <QuestionnaireTableEditor
+            key={editorKey}
             sections={sections}
             onChange={setSections}
             onBeforeDelete={captureUndo}
             readOnly={readOnly}
+            defaultExpanded={false}
           />
 
           {error && (
