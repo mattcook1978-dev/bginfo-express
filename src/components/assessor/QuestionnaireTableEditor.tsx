@@ -400,7 +400,7 @@ function DeleteConfirm({ message = 'Delete?', onConfirm, className }: {
         title="Delete"
         className="p-0.5 text-gray-300 hover:text-red-400 transition-colors"
       >
-        <X className="w-3.5 h-3.5" />
+        <Trash2 className="w-3.5 h-3.5" />
       </button>
       {open && (
         <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-40 p-3 min-w-max">

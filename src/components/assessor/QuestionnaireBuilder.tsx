@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { ChevronLeft, Save, Undo2, Eye, BookOpen, CheckCircle, ChevronRight, X, Pencil, Copy, FileDown } from 'lucide-react'
+import { ChevronLeft, Save, Undo2, Eye, BookOpen, CheckCircle, ChevronRight, X, Pencil, Copy, FileDown, HelpCircle } from 'lucide-react'
 import type { ImportedQuestionnaire, QuestionType, Section, Subsection, Question, Questionnaire } from '../../types'
 import { saveImportedQuestionnaire } from '../../lib/storage'
 import { publishQuestionnaire } from '../../lib/fetchQuestionnaire'
 import { downloadBlankQuestionnaireDoc } from '../../lib/wordExport'
 import QuestionnaireTableEditor from './QuestionnaireTableEditor'
+import SpotlightTour, { TOUR_SEEN_KEY } from './SpotlightTour'
 import {
   type BFollowUp, type BQuestion, type BSubsection, type BSection,
   REPORT_SECTIONS, uid,
@@ -271,6 +272,7 @@ export default function QuestionnaireBuilder({
   const [sections, setSections] = useState<BSection[]>(makeFixedSections(initialData))
   const [readOnly, setReadOnly] = useState(startReadOnly ?? false)
   const [editorKey, setEditorKey] = useState(0)
+  const [showTour, setShowTour] = useState(() => !localStorage.getItem(TOUR_SEEN_KEY))
   const [previewMode, setPreviewMode] = useState(false)
   const [undoStack, setUndoStack] = useState<BSection[] | null>(null)
   const [saving, setSaving] = useState(false)
@@ -430,10 +432,23 @@ export default function QuestionnaireBuilder({
             </button>
           </>
         )}
+
+        {/* Tour button — always visible */}
+        <button
+          onClick={() => setShowTour(true)}
+          title="Open tour"
+          className="p-1.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors shrink-0"
+        >
+          <HelpCircle className="w-4 h-4" />
+        </button>
       </div>
 
       {previewMode && (
         <LearnerPreviewView sections={sections} onClose={() => setPreviewMode(false)} />
+      )}
+
+      {showTour && (
+        <SpotlightTour onClose={() => { localStorage.setItem(TOUR_SEEN_KEY, '1'); setShowTour(false) }} />
       )}
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
