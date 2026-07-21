@@ -658,6 +658,23 @@ function FollowUpOverview({ fu, parentLabel, depth, parentType, parentOptions, o
                 />
               </div>
             )}
+            {!fq.followUp && !readOnly && depth < 2 && (() => {
+              const opts = (fq.type === 'single_choice' || fq.type === 'multi_choice') ? fq.options : (TRIGGER_OPTIONS[fq.type] ?? [])
+              if (opts.length === 0) return null
+              return (
+                <button
+                  className="ml-8 flex items-center gap-1 text-xs text-gray-300 hover:text-gray-500 transition-colors py-0.5"
+                  onClick={() => {
+                    const updatedQuestions = fu.questions.map((q, idx) =>
+                      idx === i ? { ...q, followUp: { trigger: opts[0], questions: [newQuestion()] } } : q
+                    )
+                    onChangeFu({ ...fu, questions: updatedQuestions })
+                  }}
+                >
+                  <Plus className="w-3 h-3" /> + follow-up
+                </button>
+              )
+            })()}
           </div>
         )
       })}
