@@ -365,6 +365,7 @@ interface SectionDragHandlers {
   onDragEnd: () => void
   onDragOver: (e: React.DragEvent) => void
   onDrop: (e: React.DragEvent) => void
+  isActive: () => boolean
 }
 
 interface DragHandlers {
@@ -373,6 +374,7 @@ interface DragHandlers {
   onDragOver: (uid: string, e: React.DragEvent) => void
   onDrop: (uid: string) => void
   onSectionDrop: (e: React.DragEvent) => void
+  isActive: () => boolean
   dragOver: DragOver | null
 }
 
@@ -690,14 +692,21 @@ function QuestionOverviewRow({ q, label, currentSectionId, sectionOptions, onMov
         <div className="absolute -top-px left-0 right-0 h-0.5 bg-blue-400 rounded pointer-events-none z-10" />
       )}
       <div
-        draggable={!readOnly}
-        className={`flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 transition-colors hover:bg-gray-50 ${readOnly ? '' : 'cursor-grab active:cursor-grabbing select-none'}`}
-        onDragStart={readOnly ? undefined : e => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('question-drag', q.uid); dragHandlers.onDragStart(q.uid) }}
-        onDragEnd={readOnly ? undefined : dragHandlers.onDragEnd}
+        className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 transition-colors hover:bg-gray-50"
         onDragOver={readOnly ? undefined : e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; dragHandlers.onDragOver(q.uid, e) }}
         onDrop={readOnly ? undefined : e => { e.preventDefault(); e.stopPropagation(); dragHandlers.onDrop(q.uid) }}
       >
-        {!readOnly && <GripVertical className="w-3.5 h-3.5 text-gray-300 shrink-0" />}
+        {!readOnly && (
+          <div
+            draggable
+            style={{ touchAction: 'none' }}
+            onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('question-drag', q.uid); dragHandlers.onDragStart(q.uid) }}
+            onDragEnd={dragHandlers.onDragEnd}
+            className="shrink-0 cursor-grab active:cursor-grabbing p-1 -m-1"
+          >
+            <GripVertical className="w-3.5 h-3.5 text-gray-300" />
+          </div>
+        )}
 
         <SectionBadge label={label} depth={0} currentSectionId={currentSectionId}
           sectionOptions={sectionOptions} onMoveSection={onMoveSection} readOnly={readOnly} />
@@ -926,13 +935,14 @@ function SectionGroup({ bs, sectionOptions, onChange, onMoveQuestion, onBeforeDe
     <div className={`border shadow-sm rounded-xl ${style.outerBorder}`}>
       <div
         className={`flex items-center gap-2 px-4 py-3 ${style.headerBg} ${headerRounding}`}
-        onDragOver={e => { if (e.dataTransfer.types.includes('section-drag')) { e.preventDefault(); sectionDrag.onDragOver(e) } }}
-        onDrop={e => { if (e.dataTransfer.types.includes('section-drag')) sectionDrag.onDrop(e) }}
+        onDragOver={e => { if (sectionDrag.isActive()) { e.preventDefault(); sectionDrag.onDragOver(e) } }}
+        onDrop={e => { if (sectionDrag.isActive()) sectionDrag.onDrop(e) }}
       >
         {/* Section drag handle */}
         {!readOnly && (
           <div
             draggable
+            style={{ touchAction: 'none' }}
             onDragStart={e => { e.stopPropagation(); sectionDrag.onDragStart(e) }}
             onDragEnd={e => { e.stopPropagation(); sectionDrag.onDragEnd() }}
             onClick={e => e.stopPropagation()}
@@ -966,8 +976,8 @@ function SectionGroup({ bs, sectionOptions, onChange, onMoveQuestion, onBeforeDe
       {!collapsed && (
         <div
           className={`${style.bodyBg} p-3 space-y-2 rounded-b-xl`}
-          onDragOver={e => { if (e.dataTransfer.types.includes('question-drag')) e.preventDefault() }}
-          onDrop={e => { if (e.dataTransfer.types.includes('question-drag')) dragHandlers.onSectionDrop(e) }}
+          onDragOver={e => { if (dragHandlers.isActive()) e.preventDefault() }}
+          onDrop={e => { if (dragHandlers.isActive()) dragHandlers.onSectionDrop(e) }}
         >
           {questionCount === 0 && (
             <p className="text-xs text-gray-400 italic text-center py-2">No questions yet — add one below</p>
@@ -1154,6 +1164,7 @@ export default function QuestionnaireTableEditor({ sections, onChange, onBeforeD
       if (!fromUid || !near || fromUid === near.uid) return
       moveQuestionRelative(fromUid, near.uid, near.position)
     },
+    isActive: () => dragRef.current !== null,
     dragOver,
   }
 
@@ -1189,6 +1200,7 @@ export default function QuestionnaireTableEditor({ sections, onChange, onBeforeD
         if (fromIdx === null || !near || fromIdx === near.idx) return
         reorderSection(fromIdx, near.idx, near.position)
       },
+      isActive: () => sectionDragRef.current !== null,
     }
   }
 

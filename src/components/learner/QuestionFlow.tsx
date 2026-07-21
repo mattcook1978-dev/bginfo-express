@@ -396,6 +396,7 @@ export default function QuestionFlow({
       {/* Accessibility toolbar */}
       <AccessibilityToolbar
         currentQuestionText={currentQuestion.text}
+        currentQuestionType={currentQuestion.type}
         questionnaire={questionnaire}
         responses={responses}
         onHighlight={setHighlight}
