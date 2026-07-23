@@ -44,6 +44,11 @@ function ViewQuestion({ q, qId, depth }: { q: Question; qId: string; depth: numb
             <span className={`inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full ${TYPE_PILL[q.type] ?? 'bg-gray-100 text-gray-500'}`}>
               {TYPE_LABEL[q.type] ?? q.type}
             </span>
+            {q.note && (
+              <p className="mt-1.5 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1.5 leading-relaxed">
+                {q.note}
+              </p>
+            )}
             {(q.options?.length ?? 0) > 0 && (
               <div className="mt-1 flex flex-wrap gap-1">
                 {q.options!.map((opt, i) => (

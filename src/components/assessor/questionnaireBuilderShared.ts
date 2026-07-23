@@ -13,6 +13,7 @@ export interface BQuestion {
   type: QuestionType
   options: string[]
   followUp: BFollowUp | null
+  note?: string
   flagged?: boolean
 }
 

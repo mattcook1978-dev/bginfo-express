@@ -57,6 +57,7 @@ export function importedQuestionnaireToBuilderSections(iq: ImportedQuestionnaire
       text: q.text,
       type: q.type,
       options: q.options ?? [],
+      ...(q.note && q.note !== 'SECTION_HEADER' && q.note !== 'SECTION_HEADER_VDQ' ? { note: q.note } : {}),
       followUp: followUp
         ? {
             trigger: q.type === 'multi_choice' && Array.isArray(followUp.condition)
@@ -88,6 +89,7 @@ export function importedQuestionnaireToBuilderSections(iq: ImportedQuestionnaire
 
 function convertQuestion(bq: BQuestion, qId: string): Question {
   const q: Question = { id: qId, text: bq.text, type: bq.type }
+  if (bq.note) q.note = bq.note
   if (bq.options.length > 0) q.options = bq.options
   if (bq.followUp && bq.followUp.questions.length > 0) {
     const isYesNo = ['yes_no', 'yes_no_notsure', 'yes_no_prefernot', 'yes_no_notsure_prefernot'].includes(bq.type)

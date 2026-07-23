@@ -467,13 +467,6 @@ export default function QuestionFlow({
           </div>
         )}
 
-        {/* Question note (inline) */}
-        {currentQuestion.note && currentQuestion.note !== 'SECTION_HEADER' && currentQuestion.note !== 'SECTION_HEADER_VDQ' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-sm text-blue-800">
-            {currentQuestion.note}
-          </div>
-        )}
-
         {/* Question panel */}
         {preferences.swReader ? (() => {
           const srWords = currentQuestion.text.split(/\s+/).filter(Boolean)
@@ -530,6 +523,13 @@ export default function QuestionFlow({
                 currentQuestion.text
               )}
             </p>
+          </div>
+        )}
+
+        {/* Question note (inline) */}
+        {currentQuestion.note && currentQuestion.note !== 'SECTION_HEADER' && currentQuestion.note !== 'SECTION_HEADER_VDQ' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-sm text-blue-800">
+            {currentQuestion.note}
           </div>
         )}
 
